@@ -22,7 +22,7 @@
 ## 仓库分区
 
 - `upstream/`：[工具与上游源码基线](upstream/BASELINES.md)，以及由 Git 忽略的本地 checkout。
-- `research/`：历史文章、PDF、个人笔记及其摘要和主题映射。
+- `research/`：[尚未验证的资料、阅读目录与主题地图](research/README.md)。
 - `docs/`：经过源码或实验验证后形成的正式知识与项目约束；`docs/src/` 是单本学习书的源文件。
 - `labs/`：独立、可运行、可冻结的学习实验。
 - `crates/`：持续演进的 `tiny-mio`、`tiny-runtime` 及后续配套 crate。
