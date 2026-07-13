@@ -1,0 +1,9 @@
+[book]
+language = "zh-CN"
+multilingual = false
+src = "src"
+title = "Rust 异步：从语言机制到运行时实现"
+
+[build]
+build-dir = "book"
+create-missing = false

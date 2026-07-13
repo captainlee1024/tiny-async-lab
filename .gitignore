@@ -1,8 +1,8 @@
 /target/
+/docs/book/
 /upstream/checkouts/
 /.worktrees/
 /research/private/
 
 *.profraw
 .DS_Store
-
