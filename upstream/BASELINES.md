@@ -46,13 +46,16 @@ GitHub Actions 使用完整 commit 固定第三方 action，注释中的 release
 | 上游 | Release / tag | Commit | 本地来源 |
 | --- | --- | --- | --- |
 | [Rust](https://github.com/rust-lang/rust) 标准库 | `1.91.1` | `ed61e7d7e242494fb7057f2657300d9e77bb4fcb` | `$(rustc --print sysroot)/lib/rustlib/src/rust/library` |
-| [Tokio](https://github.com/tokio-rs/tokio) monorepo | `tokio-1.52.3` | `d87569164fb61145e79e7ffe0b25783569cc8f93` | 后续由脚本创建 `upstream/checkouts/tokio/` |
-| [Mio](https://github.com/tokio-rs/mio) | `v1.2.0` | `ce39a6be2cc739165daaeb10cce609b9b77242ac` | 后续由脚本创建 `upstream/checkouts/mio/` |
+| [Tokio](https://github.com/tokio-rs/tokio) monorepo | `tokio-1.52.3` | `d87569164fb61145e79e7ffe0b25783569cc8f93` | [`checkout-upstream.sh`](../scripts/checkout-upstream.sh) 通过 `make upstream` 创建 `upstream/checkouts/tokio/` |
+| [Mio](https://github.com/tokio-rs/mio) | `v1.2.0` | `ce39a6be2cc739165daaeb10cce609b9b77242ac` | [`checkout-upstream.sh`](../scripts/checkout-upstream.sh) 通过 `make upstream` 创建 `upstream/checkouts/mio/` |
 
 Tokio 的 tag 固定整个 monorepo，其中包含 `tokio`、`tokio-macros`、`tokio-stream`、`tokio-test` 和 `tokio-util`，不为这些 crate 重复创建 checkout。
 
 Tokio `1.52.3` 的 [`tokio/Cargo.toml`](https://github.com/tokio-rs/tokio/blob/d87569164fb61145e79e7ffe0b25783569cc8f93/tokio/Cargo.toml#L99) 声明 Mio `1.2.0`，因此 Mio 源码基线与该 Tokio release 对齐。
 这个声明是 Cargo semver version requirement，不是本项目 `Cargo.lock` 的解析结果；项目实际依赖 Tokio 时还要单独记录 lockfile 解析版本。
+
+`make upstream` 根据本表对应的固定配置创建完整历史 checkout，核对官方 `origin`、tag 的 peeled commit 和当前 `HEAD`。
+这些目录由 Git 忽略且默认只读；重复执行不会访问网络，存在未提交变更时也不会自动清理或覆盖。
 
 ## 核验与升级
 

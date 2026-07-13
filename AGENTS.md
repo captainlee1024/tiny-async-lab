@@ -69,6 +69,7 @@ When citing upstream source, record the repository, tag or commit, file path, an
 ## Upstream and research boundaries
 
 - Do not add Git submodules. Upstream repositories are recreated from tracked source metadata and live under the ignored `upstream/checkouts/` directory.
+- Use `make upstream` to create or restore the pinned Tokio and Mio checkouts; do not replace tracked checkout automation with ad hoc clones.
 - Verify release tags and peeled commits against official remotes. Baseline upgrades update `upstream/BASELINES.md`, executable configuration, generated assets, and required compatibility changes together.
 - Do not add `upstream/checkouts/` to the Cargo workspace or use it as a normal path dependency.
 - Do not edit, format, or update upstream checkouts unless the task explicitly requests an upstream experiment.
