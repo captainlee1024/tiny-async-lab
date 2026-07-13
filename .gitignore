@@ -1,5 +1,7 @@
 /target/
 /docs/book/
+/node_modules/
+/.tools/
 /upstream/checkouts/
 /.worktrees/
 /research/private/

@@ -1,0 +1,9 @@
+{
+  "name": "tiny-async-lab-tools",
+  "private": true,
+  "packageManager": "npm@11.16.0",
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.6.0",
+    "markdownlint-cli2": "0.23.0"
+  }
+}
