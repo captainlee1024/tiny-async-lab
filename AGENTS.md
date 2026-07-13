@@ -11,6 +11,7 @@ All human-facing documentation must be written in Chinese. This includes `README
 - `ROADMAP.md` is the single source of truth for project phases and progress.
 - `CONTRIBUTING.md` is the single source of truth for branch, commit, pull request, and merge conventions.
 - `docs/engineering-standards.md` is the single source of truth for documentation, evidence, code-design, and change-size quality constraints.
+- `Makefile` is the stable local entry point for routine tasks. Keep `make ci` aligned with all required pull-request checks as the project grows.
 - `upstream/BASELINES.md` is the reviewed inventory of pinned tool versions and upstream source tags/commits; executable configuration remains authoritative at the locations it links.
 - `docs/src/` is the source of the single mdBook learning book and contains definition- and evidence-first explanations validated against source code, experiments, or authoritative documentation.
 - `labs/` contains example-first runnable experiments and immutable milestone snapshots.
@@ -85,16 +86,13 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace
 ```
 
-For documentation changes, use the versions pinned in `.github/workflows/docs.yml` and run:
+Before handing off a pull-request change, use the pinned tools and run the complete local check entry point:
 
 ```text
-markdownlint-cli2
-typos
-lychee --offline --include-fragments=full --no-progress .
-mdbook build docs
-mdbook test docs
-scripts/check-mermaid.sh
+make ci
 ```
+
+Use `make docs` for documentation-only iteration and `make book` when only a local book build is needed. External-link checks remain scheduled or manual because network availability is not a pull-request invariant.
 
 Update `ROADMAP.md` only after the corresponding work and verification are complete.
 

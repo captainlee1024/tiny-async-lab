@@ -40,7 +40,13 @@
 crate rustdoc 只承担公共 API 契约和使用入口，持久且难以撤销的设计决定记录在按需创建的 `docs/adr/`。
 历史文章和个人材料保留在 `research/`，验证前不作为项目结论。
 
-学习书使用 mdBook 组织，本地运行 `mdbook build docs` 即可构建；生成结果位于 Git 忽略的 `docs/book/`。
+学习书使用 mdBook 组织，生成结果位于 Git 忽略的 `docs/book/`。
+
+根目录的 Makefile 提供常用本地入口：
+
+- `make book`：构建学习书。
+- `make docs`：执行全部文档检查。
+- `make ci`：执行当前 PR 所需的全部本地检查；随着项目增加代码检查而扩展。
 
 ## 工具链
 

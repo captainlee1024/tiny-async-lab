@@ -205,20 +205,15 @@ Closes #123
 
 ## 本地验证
 
-文档变更使用 `.github/workflows/docs.yml` 固定的工具版本，并在提交 PR 前运行：
+提交 PR 前，在仓库根目录运行当前全部本地检查：
 
 ```text
-markdownlint-cli2
-typos
-lychee --offline --include-fragments=full --no-progress .
-mdbook build docs
-mdbook test docs
-scripts/check-mermaid.sh
+make ci
 ```
 
-前三项分别检查 Markdown、拼写和仓库内链接；`mdbook build` 同时检查学习书结构与书内链接，最后一项实际渲染仓库中的 Mermaid 图。
+`make ci` 是与 PR 必需检查保持同步的稳定入口；当前执行全部文档检查，首个 Rust package 加入后再纳入格式化、lint 和测试。
+只检查文档时运行 `make docs`，只构建学习书时运行 `make book`；所需工具及版本见 [`upstream/BASELINES.md`](upstream/BASELINES.md)。
 外部链接受网络状态影响，不作为 PR 的必需检查，由定时 CI 完整验证。
-首个 Rust package 加入后，再补充 `rustdoc` warning、doctest、格式化、lint 和测试命令。
 
 ## Review 与合并
 

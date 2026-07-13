@@ -9,7 +9,7 @@
 
 - 精确固定会影响 Rust 语义、上游实现或文档检查结果的工具与源码版本。
 - GitHub Actions 的参考环境固定为 `ubuntu-24.04`，本地环境不要求使用相同的 Linux 发行版。
-- rustup、Git、Bash 4+、ripgrep 以及 Chrome/Chromium 是兼容性前提，不固定补丁版本；它们不作为源码语义依据。
+- rustup、Git、GNU Make、Bash 4+、ripgrep 以及 Chrome/Chromium 是兼容性前提，不固定补丁版本；它们不作为源码语义依据。
 - 标准库源码来自固定工具链的 `rust-src`，不克隆完整的 `rust-lang/rust` 仓库。
 - 未进入当前研究范围的 `bytes`、`loom`、`tracing` 和 `socket2` 等仓库不提前固定。
 
