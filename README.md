@@ -21,7 +21,7 @@
 
 ## 仓库分区
 
-- `upstream/`：固定版本的上游源码清单，以及由 Git 忽略的本地 checkout。
+- `upstream/`：[工具与上游源码基线](upstream/BASELINES.md)，以及由 Git 忽略的本地 checkout。
 - `research/`：历史文章、PDF、个人笔记及其摘要和主题映射。
 - `docs/`：经过源码或实验验证后形成的正式知识与项目约束；`docs/src/` 是单本学习书的源文件。
 - `labs/`：独立、可运行、可冻结的学习实验。

@@ -11,6 +11,7 @@ All human-facing documentation must be written in Chinese. This includes `README
 - `ROADMAP.md` is the single source of truth for project phases and progress.
 - `CONTRIBUTING.md` is the single source of truth for branch, commit, pull request, and merge conventions.
 - `docs/engineering-standards.md` is the single source of truth for documentation, evidence, code-design, and change-size quality constraints.
+- `upstream/BASELINES.md` is the reviewed inventory of pinned tool versions and upstream source tags/commits; executable configuration remains authoritative at the locations it links.
 - `docs/src/` is the source of the single mdBook learning book and contains definition- and evidence-first explanations validated against source code, experiments, or authoritative documentation.
 - `labs/` contains example-first runnable experiments and immutable milestone snapshots.
 - `crates/` contains the evolving implementations maintained by this project.
@@ -67,6 +68,7 @@ When citing upstream source, record the repository, tag or commit, file path, an
 ## Upstream and research boundaries
 
 - Do not add Git submodules. Upstream repositories are recreated from tracked source metadata and live under the ignored `upstream/checkouts/` directory.
+- Verify release tags and peeled commits against official remotes. Baseline upgrades update `upstream/BASELINES.md`, executable configuration, generated assets, and required compatibility changes together.
 - Do not add `upstream/checkouts/` to the Cargo workspace or use it as a normal path dependency.
 - Do not edit, format, or update upstream checkouts unless the task explicitly requests an upstream experiment.
 - Use a temporary ignored worktree for upstream instrumentation and preserve only useful patches under `patches/`.
