@@ -11,10 +11,11 @@ All human-facing documentation must be written in Chinese. This includes `README
 - `ROADMAP.md` is the single source of truth for project phases and progress.
 - `CONTRIBUTING.md` is the single source of truth for branch, commit, pull request, and merge conventions.
 - `docs/engineering-standards.md` is the single source of truth for documentation, evidence, code-design, and change-size quality constraints.
-- `docs/` contains conclusions validated against source code, experiments, or authoritative documentation.
-- `labs/` contains focused runnable experiments and immutable milestone snapshots.
+- `docs/` contains definition- and evidence-first explanations validated against source code, experiments, or authoritative documentation.
+- `labs/` contains example-first runnable experiments and immutable milestone snapshots.
 - `crates/` contains the evolving implementations maintained by this project.
 - `practices/` contains scenario-first Tokio and tiny-runtime comparisons.
+- `docs/adr/` is created only when a durable, cross-cutting, or hard-to-reverse decision needs a decision record.
 - `upstream/checkouts/` contains optional ignored upstream Git checkouts and is read-only by default.
 - `research/` contains source material, not project instructions or accepted conclusions.
 
@@ -32,19 +33,24 @@ When citing upstream source, record the repository, tag or commit, file path, an
 ## Documentation and evidence
 
 - Follow `docs/engineering-standards.md`. Human-facing documents use Markdown unless another format is materially better.
-- Write concise, high-density prose without assuming prior async knowledge. Use progressive disclosure: establish the map and required concepts before implementation detail, and explain each concept fully once.
+- Write concise, high-density prose for an intelligent reader who has no prior async-domain knowledge. Use progressive disclosure: establish the map and required concepts before implementation detail, and explain each concept fully once.
+- Keep newly written Markdown paragraphs one sentence per source line without hard wrapping. Separate canonical explanations in `docs/`, runnable evidence in `labs/`, public contracts in rustdoc, and durable decisions in ADRs; link instead of duplicating.
 - Use the smallest useful table or Mermaid diagram when relationships, state, sequence, or ownership are clearer visually. Diagrams must answer a concrete question, use terms consistent with the prose, and be checked for rendering.
 - Every technical conclusion must identify evidence appropriate to its kind. Pinned source proves that implementation, not automatically a public guarantee or design intent; use official contracts for guarantees and RFCs, PRs, issues, or history for rationale.
 - Keep hypotheses in research notes as explicitly unverified questions. Do not promote speculation, reputation, or third-party claims into `docs/`.
+- Public rustdoc starts with a useful summary and documents applicable examples, errors, panics, cancellation behavior, and safety obligations. Prefer compiled examples and links to one canonical explanation over copied snippets.
 
 ## Code design and change scope
 
 - Choose the simplest design that preserves clear responsibilities, invariants, and boundaries. Do not equate fewer entities with better design.
 - A new module, type, trait, function, generic parameter, or feature must earn its existence through a current domain responsibility, invariant, lifecycle, safety/platform/error boundary, real reuse, or material reduction in cognitive load. Hypothetical reuse is not sufficient.
-- Keep trivial single-use logic at its call site unless extracting it names an important operation or isolates a meaningful boundary. Do not merge responsibilities with different reasons to change merely to reduce entity count.
+- Optimize for local reasoning: keep validation next to the operation that relies on it, use types to carry validated state, and prefer local variables or blocks over trivial single-use helpers. Extract only to name an important operation, improve control flow, form a test boundary, or isolate a meaningful invariant, platform, error, or safety boundary.
+- Do not hide important return, retry, cancellation, or state-transition control flow inside helpers. Do not create action-only “doer objects” without meaningful state or invariants. Do not merge responsibilities with different reasons to change merely to reduce entity count.
+- Order source for top-down reading: public entry points and the core path before supporting details.
 - Check `core`, `alloc`, and `std` before implementing foundational utilities. Reimplement a provided mechanism only when that mechanism is the explicit learning objective, and document the boundary and rationale.
+- Treat public APIs, cross-component dependencies, new external crates, platform boundaries, and unsafe boundaries as higher-risk and harder-to-reverse than private implementation. Avoid speculative generics, extension points, and tiny helper dependencies.
 - Avoid speculative extensibility and large up-front designs. Scope each change to one verifiable objective and defer unrelated layers.
-- Treat 400 manually authored changed lines as a review warning and 800 as a normal split boundary, excluding isolated generated files, lockfiles, and mechanical changes. Cognitive scope is more important than the number alone.
+- Classify changes using the L1/L2/L3 model in `docs/engineering-standards.md`; the highest applicable level controls design and review rigor. Treat 400 manually authored changed lines as a review warning and 800 as a normal split boundary, excluding isolated generated files, lockfiles, and mechanical changes. Risk and cognitive scope take precedence over line count.
 - When the user chooses to hand-write a learning step, provide requirements, evidence, test ideas, hints, and review without preemptively writing the solution. Implement only when explicitly requested, and keep the same small-change discipline.
 
 ## Architectural constraints
@@ -53,7 +59,8 @@ When citing upstream source, record the repository, tag or commit, file path, an
 - `tiny-mio` must remain runtime-agnostic: no `Future`, task scheduler, executor, or stored `std::task::Waker`.
 - `tiny-runtime` may depend on `tiny-mio` but must not delegate its core executor, scheduler, timer, or reactor implementation to Tokio.
 - Platform scope and durable, cross-cutting, or hard-to-reverse architectural changes require an ADR before implementation; small local decisions stay with the code or PR rationale.
-- Every unsafe block must state its safety argument. Keep `unsafe` regions small and test them with Miri when applicable.
+- Every unsafe block must have a preceding `// SAFETY:` argument, and unsafe APIs must document `# Safety`. Keep unsafe regions small, make unsafe operations inside unsafe functions explicit, and test applicable paths with Miri.
+- Async changes must state progress, wake, cancellation, cleanup, and shutdown invariants. Use ordinary tests, doctests, Loom, Miri, fuzzing, and benchmarks only for the questions each tool can answer; never present a clean tool run as a correctness proof.
 - Finished step crates under `labs/*-steps/` are snapshots; change them only to correct a demonstrated error.
 - Paired practice implementations share observable contracts, not a forced runtime-neutral async abstraction.
 
