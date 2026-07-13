@@ -40,7 +40,19 @@
 crate rustdoc 只承担公共 API 契约和使用入口，持久且难以撤销的设计决定记录在按需创建的 `docs/adr/`。
 历史文章和个人材料保留在 `research/`，验证前不作为项目结论。
 
-学习书使用 mdBook 组织，本地运行 `mdbook build docs` 即可构建；生成结果位于 Git 忽略的 `docs/book/`。
+学习书使用 mdBook 组织，生成结果位于 Git 忽略的 `docs/book/`。
+
+根目录的 Makefile 提供常用本地入口：
+
+- `make tools`：将固定版本的辅助工具安装到 Git 忽略的仓库本地目录。
+- `make book`：构建学习书。
+- `make docs`：执行全部文档检查。
+- `make ci`：执行当前 PR 所需的全部本地检查；随着项目增加代码检查而扩展。
+
+> **新机器首次配置：** 项目不绑定 Node.js 版本管理器。使用 `fnm` 时，将 `eval "$(fnm env --use-on-cd --shell zsh)"` 加入 `~/.zshrc`；重新进入 zsh 后，在仓库根目录依次运行 `fnm install` 和 `fnm use`。确认 Node.js 与 npm 版本符合 [`upstream/BASELINES.md`](upstream/BASELINES.md) 后，再运行 `make tools`。
+
+首次使用或工具基线更新后，先按照 `.node-version` 切换 Node.js，再运行 `make tools`。
+其他命令只使用仓库本地辅助工具，不依赖全局安装或固定的临时目录。
 
 ## 工具链
 

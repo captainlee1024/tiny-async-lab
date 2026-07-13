@@ -9,7 +9,7 @@
 
 - 精确固定会影响 Rust 语义、上游实现或文档检查结果的工具与源码版本。
 - GitHub Actions 的参考环境固定为 `ubuntu-24.04`，本地环境不要求使用相同的 Linux 发行版。
-- rustup、Git、Bash 4+、ripgrep 以及 Chrome/Chromium 是兼容性前提，不固定补丁版本；它们不作为源码语义依据。
+- rustup、Git、GNU Make、Bash 4+、ripgrep 以及 Chrome/Chromium 是兼容性前提，不固定补丁版本；它们不作为源码语义依据。
 - 标准库源码来自固定工具链的 `rust-src`，不克隆完整的 `rust-lang/rust` 仓库。
 - 未进入当前研究范围的 `bytes`、`loom`、`tracing` 和 `socket2` 等仓库不提前固定。
 
@@ -19,14 +19,17 @@
 | --- | --- | --- |
 | `rustc` 与 `rust-src` | `1.91.1`，Rust commit `ed61e7d7e242494fb7057f2657300d9e77bb4fcb` | [`rust-toolchain.toml`](../rust-toolchain.toml)；[`Cargo.toml`](../Cargo.toml) 的 `rust-version` 必须一致 |
 | Cargo | `1.91.1`，Cargo commit `ea2d97820c16195b0ca3fadb4319fe512c199a43` | 随固定 Rust 工具链安装 |
-| Node.js / npm | `24.18.0` / `11.16.0` | [`.node-version`](../.node-version)；npm 随该 Node.js 发行版安装 |
-| mdBook | `0.5.2` | [文档 workflow](../.github/workflows/docs.yml) |
-| `mdbook-linkcheck2` | `0.11.0` | [文档 workflow](../.github/workflows/docs.yml) |
-| `mdbook-mermaid` | `0.17.0` | [文档 workflow](../.github/workflows/docs.yml) |
-| Markdownlint CLI | `0.23.0` | [文档 workflow](../.github/workflows/docs.yml) 与 [Markdownlint 配置](../.markdownlint-cli2.jsonc) |
-| Mermaid.js / Mermaid CLI | `11.6.0` | [文档 workflow](../.github/workflows/docs.yml)；版本与 `mdbook-mermaid` 生成的浏览器 bundle 一致 |
-| Typos | `1.48.0` | [文档 workflow](../.github/workflows/docs.yml) 与 [Typos 配置](../typos.toml) |
-| Lychee | `0.24.2` | [文档 workflow](../.github/workflows/docs.yml) |
+| Node.js / npm | `24.18.0` / `11.16.0` | [`.node-version`](../.node-version) 与 [`package.json`](../package.json) |
+| mdBook | `0.5.2` | [`Makefile`](../Makefile) 与 [文档 workflow](../.github/workflows/docs.yml) |
+| `mdbook-linkcheck2` | `0.11.0` | [`Makefile`](../Makefile) 与 [文档 workflow](../.github/workflows/docs.yml) |
+| `mdbook-mermaid` | `0.17.0` | [`Makefile`](../Makefile) 与 [文档 workflow](../.github/workflows/docs.yml) |
+| Markdownlint CLI | `0.23.0` | [`package.json`](../package.json)、[`package-lock.json`](../package-lock.json) 与 [Markdownlint 配置](../.markdownlint-cli2.jsonc) |
+| Mermaid.js / Mermaid CLI | `11.6.0` | [`package.json`](../package.json) 与 [`package-lock.json`](../package-lock.json)；版本与 `mdbook-mermaid` 生成的浏览器 bundle 一致 |
+| Typos | `1.48.0` | [`Makefile`](../Makefile)、[文档 workflow](../.github/workflows/docs.yml) 与 [Typos 配置](../typos.toml) |
+| Lychee | `0.24.2` | [`Makefile`](../Makefile) 与 [文档 workflow](../.github/workflows/docs.yml) |
+
+运行 `make tools` 会将 Cargo 辅助工具安装到 `.tools/`，并根据 lockfile 将 Node.js 工具安装到 `node_modules/`；两个目录均由 Git 忽略。
+`make ci` 只使用这些仓库本地工具，不依赖全局安装或固定的 `/tmp` 路径。
 
 GitHub Actions 使用完整 commit 固定第三方 action，注释中的 release tag 只帮助阅读：
 
