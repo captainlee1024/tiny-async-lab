@@ -42,6 +42,8 @@
 
 分支、commit、Pull Request 和合并规则见 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
+知识证据、文档表达、代码设计和小步变更的要求见 [`docs/engineering-standards.md`](docs/engineering-standards.md)。
+
 ## 当前状态
 
 项目处于仓库奠基阶段。后续工作和完成条件以 [`ROADMAP.md`](ROADMAP.md) 为准。
