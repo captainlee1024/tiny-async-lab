@@ -1,0 +1,108 @@
+name: Documentation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  MARKDOWNLINT_VERSION: 0.23.0
+  MDBOOK_LINKCHECK2_VERSION: 0.11.0
+  MDBOOK_MERMAID_VERSION: 0.17.0
+  MDBOOK_VERSION: 0.5.2
+  # Match the Mermaid.js version bundled by mdbook-mermaid 0.17.0.
+  MERMAID_CLI_VERSION: 11.6.0
+  PUPPETEER_SKIP_DOWNLOAD: "true"
+
+jobs:
+  docs:
+    if: github.event_name != 'schedule'
+    name: docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Cache mdBook tools
+        id: cache-mdbook-tools
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/.cargo/bin/mdbook
+            ~/.cargo/bin/mdbook-linkcheck2
+            ~/.cargo/bin/mdbook-mermaid
+          key: mdbook-${{ runner.os }}-${{ runner.arch }}-${{ env.MDBOOK_VERSION }}-${{ env.MDBOOK_LINKCHECK2_VERSION }}-${{ env.MDBOOK_MERMAID_VERSION }}
+
+      - name: Install mdBook tools
+        if: steps.cache-mdbook-tools.outputs.cache-hit != 'true'
+        run: >-
+          cargo install --locked
+          "mdbook@${MDBOOK_VERSION}"
+          "mdbook-linkcheck2@${MDBOOK_LINKCHECK2_VERSION}"
+          "mdbook-mermaid@${MDBOOK_MERMAID_VERSION}"
+
+      - name: Install Markdown tools
+        run: >-
+          npm install --global --ignore-scripts
+          "markdownlint-cli2@${MARKDOWNLINT_VERSION}"
+          "@mermaid-js/mermaid-cli@${MERMAID_CLI_VERSION}"
+
+      - name: Check Markdown
+        run: markdownlint-cli2
+
+      - name: Check spelling
+        uses: crate-ci/typos@bee27e3a4fd1ea2111cf90ab89cd076c870fce14 # v1.48.0
+
+      - name: Check local links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: --offline --include-fragments=full --no-progress .
+          lycheeVersion: v0.24.2
+
+      - name: Build the book
+        run: mdbook build docs
+
+      - name: Test Rust examples in the book
+        run: mdbook test docs
+
+      - name: Render Mermaid diagrams
+        run: scripts/check-mermaid.sh
+
+  external-links:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: external links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Check all links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: --no-progress --max-retries 3 .
+          lycheeVersion: v0.24.2

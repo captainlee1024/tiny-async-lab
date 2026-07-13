@@ -203,6 +203,23 @@ Closes #123
 
 在 PR 正文中使用 `Closes #123`、`Fixes #123` 或 `Resolves #123` 关联并在合入时关闭 issue；只建立关联但不应关闭时，使用普通链接或说明文字。
 
+## 本地验证
+
+文档变更使用 `.github/workflows/docs.yml` 固定的工具版本，并在提交 PR 前运行：
+
+```text
+markdownlint-cli2
+typos
+lychee --offline --include-fragments=full --no-progress .
+mdbook build docs
+mdbook test docs
+scripts/check-mermaid.sh
+```
+
+前三项分别检查 Markdown、拼写和仓库内链接；`mdbook build` 同时检查学习书结构与书内链接，最后一项实际渲染仓库中的 Mermaid 图。
+外部链接受网络状态影响，不作为 PR 的必需检查，由定时 CI 完整验证。
+首个 Rust package 加入后，再补充 `rustdoc` warning、doctest、格式化、lint 和测试命令。
+
 ## Review 与合并
 
 - Review 按影响从高到低进行：先检查问题和范围是否正确，再检查 public contract、安全与并发不变量、取消和资源生命周期，然后检查架构与模块边界、测试和文档，最后处理命名、格式与措辞。

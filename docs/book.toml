@@ -1,9 +1,19 @@
 [book]
 language = "zh-CN"
-multilingual = false
 src = "src"
 title = "Rust 异步：从语言机制到运行时实现"
 
 [build]
 build-dir = "book"
 create-missing = false
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+[output.linkcheck]
+command = "mdbook-linkcheck2"
+follow-web-links = false
+warning-policy = "error"

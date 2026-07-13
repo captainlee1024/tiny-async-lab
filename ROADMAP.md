@@ -13,9 +13,9 @@
 - [ ] 添加上游源码版本清单与 checkout 自动化脚本。
 - [ ] 添加研究资料收件箱、目录和摘要模板。
 - [x] 添加 PR template，将变更等级、范围、证据和验收检查固化到提交流程。
-- [ ] 建立 Markdown、拼写、链接、Mermaid 渲染和 rustdoc/doctest 检查。
+- [x] 建立 Markdown、拼写、链接、mdBook 和 Mermaid 渲染检查。
 - [ ] 添加第一个标准库异步实验 package。
-- [ ] 基于真实 package 建立格式化、lint 和测试命令。
+- [ ] 基于第一个真实 package 建立 rustdoc warning、doctest、格式化、lint 和测试检查。
 
 ## 阶段 1：Rust 异步契约与编译器模型
 
