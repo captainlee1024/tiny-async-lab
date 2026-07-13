@@ -83,6 +83,17 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace
 ```
 
+For documentation changes, use the versions pinned in `.github/workflows/docs.yml` and run:
+
+```text
+markdownlint-cli2
+typos
+lychee --offline --include-fragments=full --no-progress .
+mdbook build docs
+mdbook test docs
+scripts/check-mermaid.sh
+```
+
 Update `ROADMAP.md` only after the corresponding work and verification are complete.
 
 ## Git operation ownership

@@ -1,0 +1,5 @@
+[files]
+extend-exclude = ["docs/mermaid.min.js"]
+
+[default.extend-identifiers]
+THIR = "THIR"
