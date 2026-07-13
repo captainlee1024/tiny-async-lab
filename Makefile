@@ -19,7 +19,7 @@ LYCHEE := $(TOOLS_BIN)/lychee
 
 export PATH := $(TOOLS_BIN):$(NODE_TOOLS_BIN):$(PATH)
 
-.PHONY: book ci docs toolchain-check tools tools-check
+.PHONY: book ci docs toolchain-check tools tools-check upstream
 
 ci: docs
 
@@ -32,6 +32,9 @@ docs: book
 
 book: tools-check
 	"$(MDBOOK)" build docs
+
+upstream:
+	scripts/checkout-upstream.sh
 
 tools: toolchain-check
 	cargo install --locked --root "$(TOOLS_DIR)" \
