@@ -4,11 +4,12 @@
 
 This repository is an educational Rust async lab. Prefer explicit invariants, readable state transitions, and evidence-backed explanations over premature abstraction or optimization.
 
-Documentation prose is written in Chinese. File names, Rust identifiers, and canonical technical terms remain in English so they are easy to match with upstream documentation and source.
+All human-facing documentation must be written in Chinese. This includes `README.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `docs/**`, and narrative documentation under `labs/`, `crates/`, and `practices/`. Agent-only instruction files such as `AGENTS.md` may be written in English. File names, Rust identifiers, and canonical technical terms remain in English so they are easy to match with upstream documentation and source. Commit subjects and pull request titles are written in English as specified by `CONTRIBUTING.md`; their bodies may be written in Chinese.
 
 ## Canonical project map
 
 - `ROADMAP.md` is the single source of truth for project phases and progress.
+- `CONTRIBUTING.md` is the single source of truth for branch, commit, pull request, and merge conventions.
 - `docs/` contains conclusions validated against source code, experiments, or authoritative documentation.
 - `labs/` contains focused runnable experiments and immutable milestone snapshots.
 - `crates/` contains the evolving implementations maintained by this project.
@@ -58,3 +59,6 @@ cargo test --workspace
 
 Update `ROADMAP.md` only after the corresponding work and verification are complete.
 
+## Git operation ownership
+
+Leave staging, committing, branch or history operations, tagging, and pushing to the user. Agents may inspect repository status and diffs, modify worktree files, and run non-mutating verification. After completing changes, report the exact Git status and provide explicit suggested commands for the user to review, stage, commit, and push. Do not run those Git-mutating commands unless the user explicitly requests it in the current turn.

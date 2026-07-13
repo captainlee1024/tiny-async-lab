@@ -1,87 +1,86 @@
-# Source reading method
+# 源码阅读方法
 
-This project studies both how async systems work and how mature Rust code is engineered. Those goals run in parallel, but they should not compete for attention during the same reading pass.
+本项目同时研究异步系统如何工作，以及成熟 Rust 项目如何组织高质量代码。这两条学习线并行推进，但不在同一遍阅读中争夺注意力。
 
-## Why use two passes
+## 为什么分成两遍
 
-Elegant code is usually the visible result of constraints that are easy to miss: public compatibility, pinning, cancellation, platform differences, scheduler contention, unsafe invariants, compile time, or feature combinations. Judging style before recovering those constraints encourages copying shapes without understanding their purpose.
+优雅代码通常只是约束条件的外在结果，而这些约束很容易被忽略，例如公共 API 兼容性、pinning、取消、平台差异、调度器竞争、unsafe 不变量、编译时间和 feature 组合。如果还没有还原这些约束就开始评价代码风格，很容易只模仿形式，却不理解设计目的。
 
-The project therefore uses one immediate mechanism pass and one milestone-level engineering pass.
+因此，每个机制单元先完成一遍即时的原理阅读，再在里程碑阶段完成一遍工程质量复盘。
 
-## Pass 1 — Semantics and correctness
+## 第一遍：语义与正确性
 
-Answer these questions first:
+优先回答以下问题：
 
-1. What contract does the API or internal component promise?
-2. What state is stored, and what are the allowed state transitions?
-3. Which values may move, be shared, be dropped, or outlive a poll call?
-4. Who owns progress, and what causes the next poll or event?
-5. What happens on `Pending`, cancellation, shutdown, panic, and partial initialization?
-6. Which invariants justify every unsafe operation?
-7. Which behavior is a correctness requirement and which is a performance policy?
-8. Which target, feature flags, and upstream commit does the observation apply to?
+1. API 或内部组件承诺了什么契约？
+2. 它保存了哪些状态，允许发生哪些状态转换？
+3. 哪些值可以移动、共享或 drop，哪些值必须活过一次 poll 调用？
+4. 谁负责推动进度，什么事件会触发下一次 poll 或事件处理？
+5. 遇到 `Pending`、取消、关闭、panic 和部分初始化时会发生什么？
+6. 每一处 unsafe 操作分别由哪些不变量保证安全？
+7. 哪些行为属于正确性要求，哪些只是性能策略？
+8. 当前观察适用于哪个 target、哪些 feature flags 和哪个上游 commit？
 
-The output of this pass is a mechanism note, a small diagram when useful, and a focused executable lab.
+这一遍应产出机制笔记；有必要时补充一张小图，并建立一个聚焦、可执行的实验。
 
-## Immediate style capture
+## 即时记录代码设计
 
-During pass 1, record promising choices without concluding that they are universally good. Examples include a type that makes an invalid state unrepresentable, a narrow unsafe boundary, an unusually clear name, or a test helper that exposes a hidden invariant.
+第一遍阅读时可以记录看起来值得复查的设计，但不要立刻把它判断为普遍适用的“最佳实践”。例如：让非法状态无法表示的类型、范围很小的 unsafe 边界、异常清晰的命名，或者能够暴露隐藏不变量的测试辅助工具。
 
-Each capture should include:
+每条记录至少包含：
 
-- source repository, commit, path, and symbol;
-- the constraint it appears to address;
-- a question to verify during pass 2.
+- 源码仓库、commit、文件路径和 symbol；
+- 它看起来要解决的约束；
+- 第二遍阅读时需要验证的问题。
 
-## Pass 2 — Engineering and code quality
+## 第二遍：工程设计与代码质量
 
-After the mechanism unit is understood, revisit it and ask:
+理解机制单元后，再回头回答以下问题：
 
-1. Why is this a module, type, trait, method, or free function?
-2. Which invariants are represented by types and which remain comments or runtime checks?
-3. How do names reveal ownership, lifecycle, readiness, and direction of data flow?
-4. Where are public API, internal policy, platform code, and unsafe code separated?
-5. How are errors classified, enriched, converted, or intentionally hidden?
-6. How do feature flags and conditional compilation avoid contaminating the main path?
-7. What do tests protect: examples, contracts, state transitions, races, or regressions?
-8. What complexity exists because of compatibility or scale and should not be copied into a tiny implementation?
+1. 为什么这里使用 module、type、trait、method 或 free function？
+2. 哪些不变量由类型表达，哪些仍依靠注释或运行时检查？
+3. 命名如何体现所有权、生命周期、readiness 和数据流方向？
+4. 公共 API、内部策略、平台代码与 unsafe 代码如何隔离？
+5. 错误如何分类、补充上下文、转换，或者被有意隐藏？
+6. feature flags 和条件编译如何避免污染主路径？
+7. 测试保护的是什么：示例、契约、状态转换、竞态，还是回归问题？
+8. 哪些复杂度来自兼容性或规模，不应该复制到小型实现中？
 
-The output of this pass is a short design review, not a catalogue of clever syntax.
+这一遍应产出简短的设计复盘，而不是“聪明语法”的陈列清单。
 
-## Pattern record
+## 设计模式记录模板
 
-Reusable observations should use this shape:
+可复用的观察使用以下模板：
 
 ```text
-Pattern:
-Source:
-Context and constraint:
-Mechanism:
-Why it is effective:
-Trade-offs:
-When not to use it:
-Experiment or evidence:
-Decision for tiny-async-lab:
+模式：
+来源：
+上下文与约束：
+实现机制：
+为什么有效：
+代价与取舍：
+不适用的情况：
+实验或证据：
+tiny-async-lab 的决定：
 ```
 
-## Applying a pattern
+## 如何应用一种上游模式
 
-Before carrying an upstream pattern into project code:
+把上游设计用于本项目代码前：
 
-1. Reproduce the underlying problem in a small lab.
-2. Implement the simplest correct local solution.
-3. Compare it with the upstream pattern under the same constraints.
-4. Adopt, simplify, or reject the pattern explicitly.
-5. Add a test for the invariant that motivated the decision.
+1. 在小型实验中复现它要解决的问题。
+2. 先实现本地最简单的正确方案。
+3. 在相同约束下与上游模式比较。
+4. 明确选择采用、简化或拒绝该模式。
+5. 为促成该决定的不变量添加测试。
 
-This avoids line-by-line imitation while still learning from high-quality standard-library, Tokio, and Mio code.
+这样既能避免逐行仿写，也能真正学习标准库、Tokio 和 Mio 的高质量设计。
 
-## Timing
+## 执行节奏
 
-Code-quality learning is therefore synchronous at a small scale and deferred at a deep scale:
+代码质量学习在小范围内同步进行，在深入程度上适当延后：
 
-- During first-pass reading, capture notable decisions immediately.
-- After each mechanism unit, spend a short second pass on engineering choices.
-- After each subsystem milestone, perform a deeper review across module boundaries.
-- Before finalizing the corresponding project subsystem, compare the upstream design with our current needs and documented constraints.
-
+- 第一遍阅读期间，立即记录值得复查的设计决策。
+- 每完成一个机制单元，用较短的第二遍阅读复盘工程取舍。
+- 每到达一个子系统里程碑，跨越模块边界完成一次深入复盘。
+- 在定稿对应的自研子系统前，对比上游设计、本项目当前需求与已记录约束。

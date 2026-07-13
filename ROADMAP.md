@@ -1,74 +1,74 @@
-# Roadmap
+# 路线图
 
-This file is the canonical project roadmap. Detailed notes belong under `docs/`; runnable evidence belongs under `labs/`.
+本文档是项目阶段与进度的唯一事实来源。详细结论放入 `docs/`，可运行的证据放入 `labs/`。
 
-## Phase 0 — Repository foundation
+## 阶段 0：仓库基础
 
-- [ ] Initialize the root Git repository.
-- [x] Add the virtual Cargo workspace and pinned root toolchain.
-- [x] Add repository guidance and the source-reading method.
-- [ ] Add upstream source metadata and checkout automation.
-- [ ] Add the research inbox, catalog, and digest templates.
-- [ ] Add the first standard-library async lab package.
-- [ ] Establish formatting, lint, and test commands against a real package.
+- [x] 初始化根 Git 仓库并关联远程仓库。
+- [x] 创建虚拟 Cargo workspace，并固定根工具链。
+- [x] 添加 Agent 约束与源码阅读方法。
+- [x] 建立文档语言和 Git/PR 协作规范。
+- [ ] 添加上游源码版本清单与 checkout 自动化脚本。
+- [ ] 添加研究资料收件箱、目录和摘要模板。
+- [ ] 添加第一个标准库异步实验 package。
+- [ ] 基于真实 package 建立格式化、lint 和测试命令。
 
-## Phase 1 — Rust async contracts and compiler model
+## 阶段 1：Rust 异步契约与编译器模型
 
-- [ ] Map the relevant `core`, `alloc`, and `std` modules from the pinned `rust-src` component.
-- [ ] Study and implement small examples for `Future`, `Poll`, `Context`, `Waker`, `RawWaker`, `Wake`, `Pin`, and `Unpin`.
-- [ ] Separate the language-level approximate desugaring from the compiler-generated future state machine.
-- [ ] Inspect HIR/THIR/MIR with a separately pinned nightly toolchain.
-- [ ] Study cancellation through dropping futures and resources.
-- [ ] Study `Send`/`Sync` consequences of values held across `.await` points.
-- [ ] Complete a second-pass code-quality review of the studied standard-library source.
+- [ ] 根据固定版本的 `rust-src`，梳理相关的 `core`、`alloc` 和 `std` 模块。
+- [ ] 研究 `Future`、`Poll`、`Context`、`Waker`、`RawWaker`、`Wake`、`Pin` 和 `Unpin`，并为它们编写最小实验。
+- [ ] 区分语言层面的近似脱糖与编译器生成的 Future 状态机。
+- [ ] 使用单独固定的 nightly 工具链检查 HIR、THIR 和 MIR。
+- [ ] 研究通过 drop Future 与资源产生的取消语义。
+- [ ] 研究值跨越 `.await` 时对 `Send`/`Sync` 的影响。
+- [ ] 对已研究的标准库源码完成第二遍代码质量复盘。
 
-## Phase 2 — Tokio and Mio
+## 阶段 2：Tokio 与 Mio
 
-- [ ] Pin a Tokio release and its resolved Mio baseline.
-- [ ] Build black-box labs for tasks, spawning, scheduling, time, I/O, synchronization, cancellation, and shutdown.
-- [ ] Map Tokio public APIs to internal runtime modules and important symbols.
-- [ ] Study Mio's polling model, platform backends, registration, event delivery, and poller wakeup.
-- [ ] Trace readiness from the operating system through Mio and Tokio to a task `Waker`.
-- [ ] Complete a second-pass code-quality review of each studied Tokio/Mio subsystem.
+- [ ] 固定 Tokio release 及其实际解析到的 Mio 基线版本。
+- [ ] 为任务、spawn、调度、时间、I/O、同步、取消和关闭建立黑盒实验。
+- [ ] 建立 Tokio 公共 API 与运行时内部模块、关键 symbol 之间的映射。
+- [ ] 研究 Mio 的 polling 模型、平台后端、注册、事件投递和 poller 唤醒。
+- [ ] 从操作系统开始，追踪 readiness 如何经过 Mio 和 Tokio 最终唤醒任务 `Waker`。
+- [ ] 对每个已研究的 Tokio/Mio 子系统完成第二遍代码质量复盘。
 
-## Phase 3 — tiny-mio
+## 阶段 3：tiny-mio
 
-- [ ] Decide and document the initial platform scope; default proposal is Linux-first.
-- [ ] Implement non-blocking sockets and a minimal epoll wrapper.
-- [ ] Implement events, tokens, interests, registration, and poller wakeup.
-- [ ] Define and test safety and lifecycle invariants.
-- [ ] Produce frozen milestone labs and an evolving `tiny-mio` crate.
+- [ ] 确定并记录首个支持的平台范围；当前默认方案为 Linux 优先。
+- [ ] 实现非阻塞 socket 与最小 epoll 封装。
+- [ ] 实现 event、token、interest、registration 和 poller 唤醒。
+- [ ] 定义并测试安全性与生命周期不变量。
+- [ ] 同时产出冻结的阶段实验和持续演进的 `tiny-mio` crate。
 
-## Phase 4 — tiny-runtime
+## 阶段 4：tiny-runtime
 
-- [ ] Implement `block_on`, task representation, ready queue, and custom waking.
-- [ ] Implement spawning and join handles.
-- [ ] Implement timers and runtime time driving.
-- [ ] Connect `tiny-mio` readiness to task wakeups through a reactor/driver.
-- [ ] Implement minimal async TCP.
-- [ ] Implement cancellation, resource cleanup, and graceful shutdown.
-- [ ] Add multithreaded scheduling only after the single-threaded invariants are understood and tested.
+- [ ] 实现 `block_on`、任务表示、ready queue 和自定义唤醒。
+- [ ] 实现 spawn 与 join handle。
+- [ ] 实现 timer 与运行时时钟驱动。
+- [ ] 通过 reactor/driver 将 `tiny-mio` readiness 连接到任务唤醒。
+- [ ] 实现最小异步 TCP。
+- [ ] 实现取消、资源清理和优雅关闭。
+- [ ] 只有在理解并测试单线程不变量后，才添加多线程调度。
 
-## Phase 5 — Companion crates
+## 阶段 5：配套 crate
 
-- [ ] Reassess whether `tiny-macros`, `tiny-util`, `tiny-stream`, and `tiny-test` have earned independent crate boundaries.
-- [ ] Create only the companion crates justified by concrete use cases.
+- [ ] 重新评估 `tiny-macros`、`tiny-util`、`tiny-stream` 和 `tiny-test` 是否已经具备独立 crate 的必要性。
+- [ ] 只创建已有具体使用场景支撑的配套 crate。
 
-## Phase 6 — Paired async practices
+## 阶段 6：成对的异步最佳实践
 
-- [ ] Build a capability matrix before selecting scenarios.
-- [ ] Implement each scenario once with idiomatic Tokio and once with idiomatic `tiny-runtime`.
-- [ ] Keep the observable contract and black-box tests aligned without hiding runtime differences behind a generic abstraction.
-- [ ] Validate relevant historical research against the pinned runtime version and current source.
-- [ ] Document cancellation points, ownership, backpressure, blocking boundaries, shutdown, testing, and observability.
+- [ ] 在选择场景前建立能力矩阵。
+- [ ] 每个场景分别使用惯用的 Tokio 和惯用的 `tiny-runtime` 实现一次。
+- [ ] 对齐可观察契约和黑盒测试，但不使用通用抽象掩盖运行时差异。
+- [ ] 对照固定的运行时版本与当前源码，验证历史研究资料中的相关结论。
+- [ ] 记录取消点、所有权、背压、阻塞边界、关闭、测试和可观测性。
 
-## Cross-cutting code-quality track
+## 贯穿全程的代码质量学习线
 
-For every substantial standard-library, Tokio, Mio, or project subsystem:
+对于每个重要的标准库、Tokio、Mio 或本项目子系统：
 
-- [ ] First-pass note explains correctness, invariants, state, and failure behavior.
-- [ ] Second-pass note explains API and module design choices.
-- [ ] At least one design pattern is tested in a focused lab or consciously rejected with a reason.
-- [ ] Our implementation records where it follows or deliberately differs from the upstream design.
-- [ ] Performance or elegance claims are supported by evidence rather than reputation.
-
+- [ ] 第一遍笔记解释正确性、不变量、状态和失败行为。
+- [ ] 第二遍笔记解释 API 与模块设计取舍。
+- [ ] 至少在一个聚焦实验中验证一种设计模式，或者明确记录拒绝它的理由。
+- [ ] 自研实现记录哪些设计沿用上游，哪些设计有意与上游不同。
+- [ ] 所有性能或优雅性结论都由证据支撑，而不是来自项目声誉。
