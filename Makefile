@@ -19,7 +19,7 @@ LYCHEE := $(TOOLS_BIN)/lychee
 
 export PATH := $(TOOLS_BIN):$(NODE_TOOLS_BIN):$(PATH)
 
-.PHONY: book ci docs toolchain-check tools tools-check upstream
+.PHONY: book book-preview ci docs toolchain-check tools tools-check upstream
 
 ci: docs
 
@@ -32,6 +32,9 @@ docs: book
 
 book: tools-check
 	"$(MDBOOK)" build docs
+
+book-preview: tools-check
+	"$(MDBOOK)" serve docs --hostname 127.0.0.1 --port 3000
 
 upstream:
 	scripts/checkout-upstream.sh
