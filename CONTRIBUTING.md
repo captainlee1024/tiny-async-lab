@@ -1,6 +1,7 @@
 # 贡献与 Git 协作规范
 
 本文档是本项目分支、commit、Pull Request（PR）与合并规则的唯一事实来源。规范的目标是让历史便于阅读、让 PR 便于审查，并让源码研究中的证据与实现决策能够长期追溯。文档、证据、代码设计和变更规模的质量要求见 [`docs/engineering-standards.md`](docs/engineering-standards.md)。
+跨会话、跨 PR 或需要恢复的复杂任务还应遵循 [`docs/agent-workflow/README.md`](docs/agent-workflow/README.md) 和 [`docs/agent-workflow/PLANS.md`](docs/agent-workflow/PLANS.md)。
 
 ## 语言约定
 

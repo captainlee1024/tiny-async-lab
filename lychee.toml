@@ -1,0 +1,5 @@
+# 这两个官方页面会拒绝非浏览器探测；其有效性由 Agent 工作流深度复审人工核验。
+exclude = [
+  "^https://openai\\.com/index/harness-engineering/?$",
+  "^https://openai\\.com/index/open-source-codex-orchestration-symphony/?$",
+]

@@ -11,6 +11,7 @@ All human-facing documentation must be written in Chinese. This includes `README
 - `ROADMAP.md` is the single source of truth for project phases and progress.
 - `CONTRIBUTING.md` is the single source of truth for branch, commit, pull request, and merge conventions.
 - `docs/engineering-standards.md` is the single source of truth for documentation, evidence, code-design, and change-size quality constraints.
+- `docs/agent-workflow/README.md` is the single source of truth for long-running agent tasks, context recovery, and the stable-kernel/replaceable-enhancement boundary; `PLANS.md` defines ExecPlans and `BASELINES.md` defines the official-practice review gate.
 - `Makefile` is the stable local entry point for routine tasks. `make tools` installs pinned repository-local auxiliary tools; keep `make ci` aligned with all required pull-request checks as the project grows.
 - `upstream/BASELINES.md` is the reviewed inventory of pinned tool versions and upstream source tags/commits; executable configuration remains authoritative at the locations it links.
 - `docs/src/` is the source of the single mdBook learning book and contains definition- and evidence-first explanations validated against source code, experiments, or authoritative documentation.
@@ -20,6 +21,20 @@ All human-facing documentation must be written in Chinese. This includes `README
 - `docs/adr/` is created only when a durable, cross-cutting, or hard-to-reverse decision needs a decision record.
 - `upstream/checkouts/` contains optional ignored upstream Git checkouts and is read-only by default.
 - `research/` contains source material, not project instructions or accepted conclusions. Start with `research/CATALOG.md` and `research/TOPICS.md`.
+
+## Agent task continuity
+
+Before starting a new substantive research, design, or implementation task, read the review metadata in `docs/agent-workflow/BASELINES.md`.
+When `last-reviewed + review-interval-days` has been reached, pause before substantive work, tell the user that the deep review is due, and request permission to perform it in a dedicated branch and pull request before resuming the original task.
+Only the user may explicitly defer an overdue review; deferral does not change `last-reviewed`, so report it again at the next substantive task.
+
+Use an ExecPlan when any trigger in `docs/agent-workflow/PLANS.md` applies.
+Treat conversations, compaction summaries, product memory, and machine-local task lists as convenience state, never as the only source of required cross-session or cross-machine facts.
+On resume, reconcile the active plan against the current directory, branch, Git status, diff, source, and smallest relevant verification before changing files.
+
+Deep workflow reviews are restricted to current official OpenAI/Codex and Anthropic/Claude Code sources, plus first-hand material by authors whose identity and affiliation at publication can be verified.
+Do not turn reputation, a search summary, or a third-party recommendation into workflow policy; apply the evidence classes and completion criteria in `docs/agent-workflow/BASELINES.md`.
+The review must consider removing stale harness components as models improve, not only adding new rules.
 
 ## Source-study method
 
