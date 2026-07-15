@@ -24,7 +24,8 @@ All human-facing documentation must be written in Chinese. This includes `README
 
 ## Agent task continuity
 
-Before starting a new substantive research, design, or implementation task, read the review metadata in `docs/agent-workflow/BASELINES.md`.
+Before starting a new substantive research, design, or implementation task, read `docs/agent-workflow/BASELINES.md` and run `node scripts/check-agent-workflow-review.mjs`.
+Exit status `0` means the review is current, `2` means it is due, and `1` means the metadata or invocation is invalid; do not treat an invalid check as a current review.
 When `last-reviewed + review-interval-days` has been reached, pause before substantive work, tell the user that the deep review is due, and request permission to perform it in a dedicated branch and pull request before resuming the original task.
 Only the user may explicitly defer an overdue review; deferral does not change `last-reviewed`, so report it again at the next substantive task.
 
