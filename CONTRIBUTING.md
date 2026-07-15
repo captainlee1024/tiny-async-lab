@@ -6,8 +6,8 @@
 ## 语言约定
 
 - 面向读者的项目文档统一使用中文；代码标识符、文件名和需要与上游对应的术语保留英文。
-- Commit subject 和 PR 标题统一使用英文。
-- Commit body、PR 正文与 review 讨论默认使用中文；引用上游原文时保留必要的英文术语。
+- Commit subject、Commit body 和 PR 标题统一使用英文。
+- PR 正文与 review 讨论默认使用中文；引用上游原文时保留必要的英文术语。
 
 ## 分支规范
 
@@ -120,7 +120,7 @@ feat(runtime)!: change the task shutdown contract
 - 行为变化、兼容性影响或验证方式；
 - 对应的上游 repository、tag/commit、path 和 symbol（源码研究类变更）。
 
-正文可以使用中文，建议按约 72 个字符换行。关联问题使用 footer，例如：
+正文使用英文，建议按约 72 个字符换行。关联问题使用 footer，例如：
 
 ```text
 Refs: #12
@@ -253,6 +253,8 @@ make ci
 - 对 review 意见通过新增 commit 还是重写现有 commit，取决于是否需要保留独立历史；不要为了“历史整洁”隐藏已经讨论过的重要设计变化。
 - 默认建议使用 **Squash and merge**，使符合规范的 PR 标题成为 `master` 上的最终 commit subject。
 - 只有当每个 commit 都独立有意义、通过验证，并且保留学习演进过程确有价值时，才保留多个 commit；此时每个 commit 都必须符合本规范。
+- 书中把观察版、解释版或其他 commit 作为长期教学检查点时，必须使用 **Create a merge commit** 使被引用 commit 进入 `master` 历史，并在 PR 正文明确这一例外；发布 permalink 后不得再 rebase、amend 或 force-push 改写该 commit。
+- 如果仓库或托管平台只能 squash，不得把仅存在于临时分支的 commit 当作永久检查点；应在合入后记录实际 squash commit，或者改用受版本控制的不可变 step snapshot。
 - 合入后删除已完成的短生命周期分支。
 
 ## 规范依据

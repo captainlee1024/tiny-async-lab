@@ -121,7 +121,7 @@ flowchart TD
 交接至少包含：
 
 1. 当前分支、精确 `git status`、变更范围和已经运行的实际验证；
-2. 按 [`CONTRIBUTING.md`](../../CONTRIBUTING.md) 划分的有序 commit 方案，包括每个 commit 的职责、准确路径集合和英文 subject；
+2. 按 [`CONTRIBUTING.md`](../../CONTRIBUTING.md) 划分的有序 commit 方案，包括每个 commit 的职责、准确路径集合、英文 subject，以及需要 body 时的英文正文；
 3. 供用户 review、stage、commit 和 push 的明确命令，多个 commit 不得退化为一次无差别 `git add`；
 4. 符合仓库模板的英文 PR 标题和可直接复制的中文 PR 正文，其中填写实际结果、依据、风险和未完成项，不保留占位符；
 5. 尚未运行、只能由 GitHub Actions 或人工 review 完成的检查。
