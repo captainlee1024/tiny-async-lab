@@ -143,3 +143,7 @@ Update `ROADMAP.md` only after the corresponding work and verification are compl
 ## Git operation ownership
 
 Leave staging, committing, branch or history operations, tagging, and pushing to the user. Agents may inspect repository status and diffs, modify worktree files, and run non-mutating verification. After completing changes, report the exact Git status and provide explicit suggested commands for the user to review, stage, commit, and push. Do not run those Git-mutating commands unless the user explicitly requests it in the current turn.
+
+For work spanning multiple separable scopes, establish a provisional ordered commit plan before implementation so file ownership and verification checkpoints remain clear, then revise it when real dependencies require a different atomic boundary. Before suggesting Git commands, partition PR-ready changes according to `CONTRIBUTING.md`: separate independently reviewable policies, chapters, labs, crates, or modules, while keeping an implementation with the direct tests required to verify it when splitting would create an incomplete commit. Do not suggest one catch-all commit for separable scopes.
+
+Every PR-ready handoff must proactively include the ordered commit plan with exact path groups and English subjects, plus an English PR title and a complete copy-ready Chinese PR body based on the repository template. Include actual verification and remaining external or human checks; do not wait for a follow-up request for PR content. The detailed handoff contract is canonical in `docs/agent-workflow/README.md`.
