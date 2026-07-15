@@ -87,14 +87,14 @@
 
 #### 实验关卡与读者回写
 
-观察版固定为 commit `39c7969231ac1ae24d1bf64fb30419633bcb6875`，相邻书页 `docs/src/rust-async/future-poll-lab.md` 负责把读者从总体模型路由到运行、源码阅读和理解检查。
+观察版固定为 commit `39c7969231ac1ae24d1bf64fb30419633bcb6875`，相邻书页 `docs/src/rust-async/future-poll-lab.md` 只负责在正确位置把读者路由到固定 lab 版本。
 当前 PR 保留观察版已有的必要注释，不加入本轮讨论形成的详细解释。
 观察版合入后，指定读者完成逐段走读、复述和纠偏，再由下一 PR 先形成解释版 lab commit，随后用独立 book commit 记录观察版、解释版及固定 diff。
 
 解释版允许采用面向教学的高密度注释，完整保存已经核验的状态转换、责任分工、顺序原因、容易混淆的直觉、真实实现差异和后续源码入口，而不是只留下简短标签。
 它仍只解释当前实验及其边界；跨段的公共契约留在书中，未经固定契约或源码核验的讨论不进入注释。
 
-本关卡的“理解足够”以本里程碑已有五个理解问题和书页中的具体检查为准，只验收 Future/Poll 实验边界。
+本关卡的“理解足够”以本里程碑已有五个理解问题和指定读者 review 为准，这些内部检查不复制到学习书入口，只验收 Future/Poll 实验边界。
 `Future::poll`、`Poll`、`Ready<T>` 和 `Pending<T>` 的固定标准库源码必须在里程碑 2 完成前逐个走读；Waker 系列源码和真实重新入队分别由里程碑 3、4 回收。
 
 正文和实验完成后应能仅依靠它们回答以下问题：
@@ -138,6 +138,7 @@
 - [x] `2026-07-16` — 建立标准库实验 package `labs/future-poll`，用显式单线程状态和安全 `Wake` 实现观察惰性执行、最近 Waker、`Pending` 到 `Ready` 以及两种具体完成后行为；同时把 Rust 格式化、Clippy、测试、doctest 和 rustdoc 接入本地 `make ci` 与 PR workflow，并完成阶段 0 对应路线图项。
 - [x] `2026-07-16` — 指定读者完成观察版首次走读并复述资源状态、Waker 通知和重新 poll 的关系；讨论纠正了“wake 负责把 Future 改成 Ready”和“wake 后必然 Ready”两处边界，并确认当前实验在 `complete` 后具有更强的确定行为。
 - [x] `2026-07-16` — 决定把观察版、读者复述、讨论纠偏和解释版回写形成两个 PR 的实验关卡；当前 PR 增加书中明确入口与项目方法约束，解释版注释留到观察版合入后的下一 PR。
+- [x] `2026-07-16` — 用户 review 指出首版实验入口把理解检查、Git 流程和源码计划堆成了第二篇文章；将其收缩为只链接观察版和 README 的短路标，并把各类信息恢复到代码、计划与正式章节。
 
 ## Surprises and Discoveries
 
@@ -149,6 +150,7 @@
 - 已验证：`Poll<T>` 只描述一次调用是否取得输出，不是 Future 内部状态机的完整公共模型；`Pending` 的通知责任以“能够取得进展”为条件，永不完成的 `core::future::Pending<T>` 因此无需制造 wake。
 - 已验证：Future 完成后再次 poll 的通用边界只有调用方不应这样做、实现方仍不得造成 undefined behavior；panic、永久阻塞或其他普通行为都不能由 trait 统一推断。
 - 已验证：可运行实验和必要字段注释足以支持独立走读，但不会自动暴露读者是否把资源状态变化、Waker 通知和 executor 调度合并成同一动作；先要求读者复述再回写详细注释能够定位真实理解断点。
+- 已验证：把内部理解检查和协作脚手架直接复制到实验入口，会与 lab 代码争夺注意力并制造额外阅读负担；入口只需在正确时机指向固定实验版本。
 - 待验证：编译器对 `async`/`.await` 的实际 lowering 细节留给路线图中固定 nightly 的独立里程碑，不能从 Reference 的近似脱糖推断具体 MIR 布局。
 
 ## Decision Log
@@ -165,6 +167,7 @@
 - `2026-07-16` — 采用“观察版合入 → 指定读者运行和复述 → 讨论纠偏 → 下一 PR 回写解释版”的实验关卡；解释版可以保留较完整的教学推理，但实验和 book 仍使用不同 commit，书页以固定 commit 和 diff 连接两个版本。
 - `2026-07-16` — 教学检查点必须成为 `master` 可达历史；包含观察版 `39c7969` 的当前 PR 和后续解释版 PR 使用 merge commit，不采用默认 squash，并且在 book 记录 permalink 后不再改写对应 commit。
 - `2026-07-16` — lab 不替代固定标准库源码：里程碑 2 走读 `Future::poll`、`Poll`、`Ready<T>` 与 `Pending<T>`，里程碑 3 再闭合 Waker 身份与安全边界，里程碑 4 才实现真实 ready queue 与重新 poll。
+- `2026-07-16` — 学习书中的 lab 页面采用极短路标而不是教程：只保留出现原因、固定版本和 lab README 入口，理解检查、Git 操作、详细解释与源码计划分别留在权威位置。
 
 ## Validation and Acceptance
 
@@ -186,6 +189,8 @@
 - 本地 Rust 1.91.1 `rust-src` 定位检查 — 2026-07-16 确认 `library/core/src/future/future.rs::Future::poll`、`library/core/src/task/poll.rs::Poll`、`library/core/src/future/ready.rs::Ready<T>::poll` 与 `library/core/src/future/pending.rs::Pending<T>::poll` 均存在，后续走读入口没有依赖猜测路径。
 - `.tools/bin/lychee --no-progress --max-retries 3 docs/src/rust-async/future-poll-lab.md` — 2026-07-16 检查观察版 commit、源码和实验说明的 4 个外部链接，全部通过。
 - `make ci` — 2026-07-16 对实验关卡书页、理解回写方法、Agent 约束和计划更新运行通过，覆盖 Rust 格式化、Clippy、2 个单元测试、1 个 doctest、rustdoc、Markdown、拼写、离线链接、mdBook、Mermaid 和工作流复审门禁。
+- `make docs` — 2026-07-16 对精简后的 7 行 lab 入口和方法约束运行通过，mdBook 目录、Markdown、拼写、离线链接、doctest 与 Mermaid 检查均通过。
+- `.tools/bin/lychee --no-progress --max-retries 3 docs/src/rust-async/future-poll-lab.md` — 2026-07-16 检查精简入口保留的观察版与 lab README 两个外部链接，全部通过。
 
 ## Idempotence and Recovery
 
