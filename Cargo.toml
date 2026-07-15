@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = []
+members = ["labs/future-poll"]
 
 [workspace.package]
 edition = "2024"
@@ -8,4 +8,3 @@ rust-version = "1.91.1"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "deny"
-

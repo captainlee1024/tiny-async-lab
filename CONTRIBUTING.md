@@ -6,8 +6,8 @@
 ## 语言约定
 
 - 面向读者的项目文档统一使用中文；代码标识符、文件名和需要与上游对应的术语保留英文。
-- Commit subject 和 PR 标题统一使用英文。
-- Commit body、PR 正文与 review 讨论默认使用中文；引用上游原文时保留必要的英文术语。
+- Commit subject、Commit body 和 PR 标题统一使用英文。
+- PR 正文与 review 讨论默认使用中文；引用上游原文时保留必要的英文术语。
 
 ## 分支规范
 
@@ -88,6 +88,31 @@ feat(runtime)!: change the task shutdown contract
 
 每个 commit 应形成一个可解释的原子变更：它只服务于一个目的，在可行时能够独立编译和测试，也不会混入无关格式化或顺手重构。
 
+### Commit 划分
+
+一个 PR 可以包含多个 commit，commit 边界按照能够独立 review 和验证的职责划分，不按照开发时间顺序，也不把整个 PR 的所有文件默认压成一个提交。
+任务预计跨越两个以上职责、crate 或可独立验收模块时，应在实现前先写出暂定的有序 commit 方案，并在依赖关系被源码或检查证明后调整，而不是等到提交前才尝试从混合 diff 中切割历史。
+
+以下范围在能够保持各 commit 可构建、可验证时默认分开：
+
+- Agent 或工作流规则与 `labs/`、`docs/src/`、`crates/`、`practices/` 中的学习或实现成果；
+- 学习书章节与可运行实验，前提是每一部分都能独立成立且不会留下失效链接；
+- 不同 crate 的实现，或者同一 crate 内具有不同契约、状态所有者或变化原因的模块；
+- 与当前行为无关的机械修改、重命名和格式化。
+
+以下内容通常保持在同一个原子 commit：
+
+- 实现某项行为的代码，以及证明该行为和失败边界所必需的直接测试；
+- 新 package 与使它进入 workspace、lockfile 和统一检查所必需的最小配置；
+- 必须同时修改才能保持编译通过或契约一致的跨 crate API 迁移。
+
+只有测试能够独立描述或验证已经存在的行为时，才默认使用单独的 `test(<scope>)` commit，例如增加既有行为覆盖、测试基础设施或独立回归保护。
+如果测试依赖同一变更中尚未提交的新实现，机械地把测试和代码拆成两个 commit 会产生缺少验证或无法通过检查的中间状态，此时应保留在同一 `feat` 或 `fix` commit。
+
+物理文件边界可以帮助形成清楚的测试职责，但不决定 commit 边界；测试文件布局遵循 [`docs/engineering-standards.md`](docs/engineering-standards.md) 的“测试文件与模块布局”。
+
+### Commit body
+
 只有 subject 已足以解释变更时才可以省略 body。需要正文时，subject 后空一行，正文重点说明：
 
 - 为什么需要这项变更；
@@ -95,7 +120,7 @@ feat(runtime)!: change the task shutdown contract
 - 行为变化、兼容性影响或验证方式；
 - 对应的上游 repository、tag/commit、path 和 symbol（源码研究类变更）。
 
-正文可以使用中文，建议按约 72 个字符换行。关联问题使用 footer，例如：
+正文使用英文，建议按约 72 个字符换行。关联问题使用 footer，例如：
 
 ```text
 Refs: #12
@@ -189,6 +214,7 @@ Closes #123
 提交 PR 前确认：
 
 - PR 只解决一个清晰问题，没有混入无关修改；
+- PR 中的 commit 已按可独立 review 的职责划分，没有把 Agent 规则、章节、实验或不同实现模块无理由压入同一提交；
 - 已写明本次目标、非目标、变更等级、依据和可验证的验收条件；
 - diff 规模适合有效 review；超过建议预算时已经说明不可继续拆分的理由；
 - 标题符合本规范且能够作为最终 commit subject；
@@ -213,7 +239,7 @@ make tools # 首次使用或工具基线更新后执行
 make ci
 ```
 
-`make ci` 是与 PR 必需检查保持同步的稳定入口；当前执行全部文档检查，首个 Rust package 加入后再纳入格式化、lint 和测试。
+`make ci` 是与 PR 必需检查保持同步的稳定入口；当前执行 Rust 格式化、Clippy、测试、rustdoc 和全部文档检查。
 `make tools` 要求当前终端使用 `.node-version` 固定的 Node.js，并显式联网将固定版本的 Cargo 辅助工具安装到 `.tools/`，再根据 lockfile 将 Node.js 工具安装到 `node_modules/`；两个目录均不提交到 Git。
 `make ci` 不安装工具，也不回退到全局或 `/tmp` 中的同名程序；本地工具缺失时按照提示运行 `make tools`。
 只检查文档时运行 `make docs`，只构建学习书时运行 `make book`，需要实时预览时运行 `make book-preview`；所需工具及版本见 [`upstream/BASELINES.md`](upstream/BASELINES.md)。
@@ -227,6 +253,8 @@ make ci
 - 对 review 意见通过新增 commit 还是重写现有 commit，取决于是否需要保留独立历史；不要为了“历史整洁”隐藏已经讨论过的重要设计变化。
 - 默认建议使用 **Squash and merge**，使符合规范的 PR 标题成为 `master` 上的最终 commit subject。
 - 只有当每个 commit 都独立有意义、通过验证，并且保留学习演进过程确有价值时，才保留多个 commit；此时每个 commit 都必须符合本规范。
+- 书中把观察版、解释版或其他 commit 作为长期教学检查点时，必须使用 **Create a merge commit** 使被引用 commit 进入 `master` 历史，并在 PR 正文明确这一例外；发布 permalink 后不得再 rebase、amend 或 force-push 改写该 commit。
+- 如果仓库或托管平台只能 squash，不得把仅存在于临时分支的 commit 当作永久检查点；应在合入后记录实际 squash commit，或者改用受版本控制的不可变 step snapshot。
 - 合入后删除已完成的短生命周期分支。
 
 ## 规范依据

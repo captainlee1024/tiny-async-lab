@@ -4,7 +4,7 @@
 
 This repository is an educational Rust async lab. Prefer explicit invariants, readable state transitions, and evidence-backed explanations over premature abstraction or optimization.
 
-All human-facing documentation must be written in Chinese. This includes `README.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `docs/**`, and narrative documentation under `labs/`, `crates/`, and `practices/`. Agent-only instruction files such as `AGENTS.md` may be written in English. File names, Rust identifiers, and canonical technical terms remain in English so they are easy to match with upstream documentation and source. Commit subjects and pull request titles are written in English as specified by `CONTRIBUTING.md`; their bodies may be written in Chinese.
+All human-facing documentation must be written in Chinese. This includes `README.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `docs/**`, and narrative documentation under `labs/`, `crates/`, and `practices/`. Agent-only instruction files such as `AGENTS.md` may be written in English. File names, Rust identifiers, and canonical technical terms remain in English so they are easy to match with upstream documentation and source. Commit subjects, commit bodies, and pull request titles are written in English as specified by `CONTRIBUTING.md`; pull request bodies and review discussions may be written in Chinese.
 
 ## Canonical project map
 
@@ -43,6 +43,13 @@ Use the two-pass method in `docs/source-reading-method.md`:
 
 1. Establish semantics, contracts, invariants, state transitions, and failure modes.
 2. Revisit the same unit for API design, naming, module boundaries, errors, tests, documentation, platform isolation, and maintainability.
+
+When a mechanism uses a review-driven lab checkpoint, keep the first PR at the observation stage with only the comments needed to identify roles, constraints, and safe operation.
+After the designated reader has run the lab, explained their model, and resolved the predeclared understanding checks through review, use a follow-up PR to add a synthesized explanation version and record both immutable revisions in the adjacent book page.
+Explanation-version teaching code may use substantially denser comments than production code when they preserve verified reasoning about state transitions, responsibility boundaries, ordering, misleading intuitions, real-system limits, and deferred source questions; do not reduce it to terse labels or turn unverified discussion into conclusions.
+Keep the adjacent book page as a compact route into the lab, not a second explanation: it may state why the lab appears here and link the fixed revisions, but must not copy understanding checks, Git workflow, detailed mechanisms, or the later source-reading plan into the learning path.
+When a book page records a commit as a durable learning checkpoint, follow `CONTRIBUTING.md` and preserve that commit in `master` history with a merge commit; do not squash, rebase, or amend a revision after publishing its permalink.
+A lab is observable evidence, not a substitute for walking the applicable fixed standard-library or upstream source; name the later path and symbol before using a forward reference, and complete that source pass before declaring the mechanism unit understood.
 
 Do not declare a mechanism understood while a conclusion depends on an unnamed black box. A temporary forward reference must name the missing concept, explain why it does not invalidate the current conclusion, and route it to a concrete `ROADMAP.md` milestone or `research/TOPICS.md` question.
 
@@ -143,3 +150,7 @@ Update `ROADMAP.md` only after the corresponding work and verification are compl
 ## Git operation ownership
 
 Leave staging, committing, branch or history operations, tagging, and pushing to the user. Agents may inspect repository status and diffs, modify worktree files, and run non-mutating verification. After completing changes, report the exact Git status and provide explicit suggested commands for the user to review, stage, commit, and push. Do not run those Git-mutating commands unless the user explicitly requests it in the current turn.
+
+For work spanning multiple separable scopes, establish a provisional ordered commit plan before implementation so file ownership and verification checkpoints remain clear, then revise it when real dependencies require a different atomic boundary. Before suggesting Git commands, partition PR-ready changes according to `CONTRIBUTING.md`: separate independently reviewable policies, chapters, labs, crates, or modules, while keeping an implementation with the direct tests required to verify it when splitting would create an incomplete commit. Do not suggest one catch-all commit for separable scopes.
+
+Every PR-ready handoff must proactively include the ordered commit plan with exact path groups, English subjects, and English bodies when a body is useful, plus an English PR title and a complete copy-ready Chinese PR body based on the repository template. Include actual verification and remaining external or human checks; do not wait for a follow-up request for PR content. The detailed handoff contract is canonical in `docs/agent-workflow/README.md`.

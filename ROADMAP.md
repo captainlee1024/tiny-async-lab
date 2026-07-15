@@ -20,8 +20,8 @@
 - [x] 建立 Agent 长任务的仓库事实源、ExecPlan、恢复协议与 14 天官方实践复审门禁。
 - [ ] 用第一个真实复杂任务执行冷启动、上下文切换与跨机器恢复演练。
 - [x] 添加工作流复审到期的每日自动检查和去重提醒。
-- [ ] 添加第一个标准库异步实验 package。
-- [ ] 基于第一个真实 package 建立 rustdoc warning、doctest、格式化、lint 和测试检查。
+- [x] 添加第一个标准库异步实验 package。
+- [x] 基于第一个真实 package 建立 rustdoc warning、doctest、格式化、lint 和测试检查。
 
 ## 阶段 1：Rust 异步契约与编译器模型
 

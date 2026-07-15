@@ -19,9 +19,15 @@ LYCHEE := $(TOOLS_BIN)/lychee
 
 export PATH := $(TOOLS_BIN):$(NODE_TOOLS_BIN):$(PATH)
 
-.PHONY: agent-workflow-check book book-preview ci docs toolchain-check tools tools-check upstream
+.PHONY: agent-workflow-check book book-preview ci docs rust toolchain-check tools tools-check upstream
 
-ci: docs agent-workflow-check
+ci: rust docs agent-workflow-check
+
+rust:
+	cargo fmt --all -- --check
+	cargo clippy --workspace --all-targets --all-features -- -D warnings
+	RUSTDOCFLAGS="-D warnings" cargo test --workspace
+	RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
 
 agent-workflow-check: toolchain-check
 	node scripts/check-agent-workflow-review.mjs --validate
