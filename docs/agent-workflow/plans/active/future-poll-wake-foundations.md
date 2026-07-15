@@ -3,7 +3,7 @@
 - 状态：active
 - 最近更新：2026-07-16
 - 关联路线图：`ROADMAP.md` 阶段 0 的恢复演练，以及阶段 1 的异步系统边界、`Future`/`Poll`、唤醒协议和最小 executor
-- 关联 PR：里程碑 1 的 [#13](https://github.com/captainlee1024/tiny-async-lab/pull/13) 已合并到 `master`，merge commit `43fb7b0e901ae8e2b8502ce7d5a6ff77d0519be1`；里程碑 2 的首个实验 PR 尚未创建
+- 关联 PR：里程碑 1 的 [#13](https://github.com/captainlee1024/tiny-async-lab/pull/13) 已合并到 `master`，merge commit `43fb7b0e901ae8e2b8502ce7d5a6ff77d0519be1`；里程碑 2 的观察版 [#14](https://github.com/captainlee1024/tiny-async-lab/pull/14) 已通过 merge commit `5c58b6fde6e66e6690f38f2226f8e3a7a32031a8` 合入，解释版 PR 尚未创建
 
 ## 目标
 
@@ -88,8 +88,8 @@
 #### 实验关卡与读者回写
 
 观察版固定为 commit `39c7969231ac1ae24d1bf64fb30419633bcb6875`，相邻书页 `docs/src/rust-async/future-poll-lab.md` 只负责在正确位置把读者路由到固定 lab 版本。
-当前 PR 保留观察版已有的必要注释，不加入本轮讨论形成的详细解释。
-观察版合入后，指定读者完成逐段走读、复述和纠偏，再由下一 PR 先形成解释版 lab commit，随后用独立 book commit 记录观察版、解释版及固定 diff。
+观察版已随 PR #14 合入，指定读者随后完成逐段走读、复述和纠偏。
+解释版固定为本分支 commit `6fb9ee38aedb9e6d1ee6d9de9426ea4827b9ade1`，只向 `labs/future-poll/src/lib.rs` 增加讨论后核验的教学注释，不改变实验行为；相邻书页用独立 book commit 记录两个版本与注释差异。
 
 解释版允许采用面向教学的高密度注释，完整保存已经核验的状态转换、责任分工、顺序原因、容易混淆的直觉、真实实现差异和后续源码入口，而不是只留下简短标签。
 它仍只解释当前实验及其边界；跨段的公共契约留在书中，未经固定契约或源码核验的讨论不进入注释。
@@ -139,6 +139,8 @@
 - [x] `2026-07-16` — 指定读者完成观察版首次走读并复述资源状态、Waker 通知和重新 poll 的关系；讨论纠正了“wake 负责把 Future 改成 Ready”和“wake 后必然 Ready”两处边界，并确认当前实验在 `complete` 后具有更强的确定行为。
 - [x] `2026-07-16` — 决定把观察版、读者复述、讨论纠偏和解释版回写形成两个 PR 的实验关卡；当前 PR 增加书中明确入口与项目方法约束，解释版注释留到观察版合入后的下一 PR。
 - [x] `2026-07-16` — 用户 review 指出首版实验入口把理解检查、Git 流程和源码计划堆成了第二篇文章；将其收缩为只链接观察版和 README 的短路标，并把各类信息恢复到代码、计划与正式章节。
+- [x] `2026-07-16` — PR #14 通过 merge commit `5c58b6f` 合入，`master` 与 `origin/master` 同步且工作树干净；观察版 `39c7969` 是 `master` 祖先，教学检查点没有被 squash。
+- [x] `2026-07-16` — 在独立分支形成解释版 commit `6fb9ee3`，只增加 73 行注释，梳理 readiness 与通知、最近 Waker、发布顺序、完成终态、task 唤醒和手动驱动边界；书页保持 7 行并增加解释版与该 commit 的差异入口。
 
 ## Surprises and Discoveries
 
@@ -191,6 +193,11 @@
 - `make ci` — 2026-07-16 对实验关卡书页、理解回写方法、Agent 约束和计划更新运行通过，覆盖 Rust 格式化、Clippy、2 个单元测试、1 个 doctest、rustdoc、Markdown、拼写、离线链接、mdBook、Mermaid 和工作流复审门禁。
 - `make docs` — 2026-07-16 对精简后的 7 行 lab 入口和方法约束运行通过，mdBook 目录、Markdown、拼写、离线链接、doctest 与 Mermaid 检查均通过。
 - `.tools/bin/lychee --no-progress --max-retries 3 docs/src/rust-async/future-poll-lab.md` — 2026-07-16 检查精简入口保留的观察版与 lab README 两个外部链接，全部通过。
+- `git merge-base --is-ancestor 39c7969231ac1ae24d1bf64fb30419633bcb6875 master` — 2026-07-16 在 PR #14 合入后返回 0，确认观察版 commit 已由 merge commit 保留在 `master` 历史。
+- `cargo test -p future-poll` — 2026-07-16 在更新后的 `master` 通过 2 个单元测试和 1 个 doctest，确认合并后实验基线可恢复。
+- `git diff --unified=0 -- labs/future-poll/src/lib.rs` — 2026-07-16 确认解释版只增加 73 行注释，没有修改任何可执行行、测试或输出。
+- `cargo fmt --all -- --check`、`cargo clippy -p future-poll --all-targets --all-features -- -D warnings` 与 `cargo test -p future-poll` — 2026-07-16 对解释版 commit 运行通过，覆盖格式化、lint、2 个单元测试和 1 个 doctest。
+- `make ci` — 2026-07-16 对解释版注释、7 行 book 入口和恢复记录运行通过，覆盖 workspace 格式化、Clippy、测试、doctest、rustdoc、Markdown、拼写、离线链接、mdBook、Mermaid 和工作流复审门禁。
 
 ## Idempotence and Recovery
 
@@ -200,8 +207,7 @@
 
 ## Next Step
 
-先完成并验证当前 PR 的观察版 `labs/future-poll`、workspace/CI 接入、契约矩阵、实验关卡书页和学习方法约束，由用户按独立模块提交、推送并完成 review，再使用 merge commit 保留观察版检查点 `39c7969`。
-合入后从最新 `master` 创建下一分支，把本轮读者讨论梳理为解释版 lab commit，再用独立 book commit 补齐第二个固定版本和 diff。
+完成解释版分支的 book 与 ExecPlan 独立提交，再由用户推送；推送后对新增的解释版源码和 commit permalink 运行联网链接检查，创建 PR 并使用 merge commit 保留解释版检查点 `6fb9ee3`。
 解释版合入后走读本计划列出的 Future/Poll 固定标准库源码，并从 `research/CATALOG.md` 重新进入 `ASYNC-MODEL` 已路由资料，只补齐本里程碑所需的设计原因与证据边界，再起草 Future/Poll 正文。
 
 ## Outcomes and Retrospective
