@@ -14,6 +14,7 @@
 | `NM-RUST-BLOG` | [baby steps：Rust](https://smallcultfollowing.com/babysteps/categories/rust/) | 博客合集 | 异步、借用检查和 trait system 的设计探索 | 按主题阅读 |
 | `NM-INTERVIEWS` | [Async Interviews](https://smallcultfollowing.com/babysteps/categories/asyncinterviews/) | 访谈与视频合集 | 追踪 async/await 稳定后不同实现者看到的问题 | 按主题阅读 |
 | `NM-GITHUB` | [nikomatsakis](https://github.com/nikomatsakis) | 代码仓库入口 | 查找文章对应原型和形式化工作；使用前固定 commit | 按需核验 |
+| `RAIN-GITHUB` | [Rain](https://github.com/wzxzhuxi/Rain) | C++23 代码仓库 | 调研 thread-per-core、I/O driver 与调度取舍；使用实现结论前固定 commit | 入口已核验；按需固定 |
 
 ## 首批阅读队列
 
@@ -35,6 +36,7 @@
 | `NM-MINPIN` | [MinPin](https://smallcultfollowing.com/babysteps/blog/2024/11/05/minpin/) | 2024-11-05 | pinning 设计公理及与其他方案的比较 | 阶段 1 | 待读 |
 | `NM-MOVE` | [Move, Destruct, Forget, and Rust](https://smallcultfollowing.com/babysteps/blog/2025/10/21/move-destruct-leak/) | 2025-10-21 | `Move`、受控析构、async scope 与清理保证 | 阶段 1、4 | 待读 |
 | `RUST-ASYNC-2026` | [Rust 2026：Just add async](https://rust-lang.github.io/rust-project-goals/2026/roadmap-just-add-async.html) | 2026 | 当前项目方向和候选时间线的官方核验入口 | 全程 | 按需核验 |
+| `RAIN-DESIGN` | [Rain：从零开始构建异步库](https://linux.do/t/topic/1949965) | 2026-04-12 | thread-per-core、`SO_REUSEPORT` 与自述性能结果形成的候选假设 | 阶段 2、7 | 待读、待复现 |
 
 阅读队列只建立检索入口。
 某篇资料是否仍反映当前状态，必须在笔记中继续核对已接受 RFC、tracking issue、固定源码和当前官方项目目标。
