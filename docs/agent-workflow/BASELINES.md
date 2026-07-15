@@ -9,9 +9,11 @@
 | --- | --- |
 | `last-reviewed` | `2026-07-15` |
 | `review-interval-days` | `14` |
+| `review-timezone` | `Asia/Shanghai` |
 | `next-review` | `2026-07-29` |
 
 `next-review` 是便于人工阅读的派生值，权威计算输入是 `last-reviewed` 与 `review-interval-days`。
+当天日期由 `review-timezone` 指定的 IANA 时区确定。
 到达 `next-review` 当天即视为应复审。
 
 ## 来源边界

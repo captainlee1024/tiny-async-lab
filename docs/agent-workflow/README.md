@@ -42,6 +42,25 @@
 定时自动化只能提醒复审到期，不能自动把新文章转化为项目规范，也不能自动合并变更。
 详细来源边界、完成条件和复审记录见 [`BASELINES.md`](BASELINES.md)。
 
+### 自动提醒
+
+[`agent-workflow-review.yml`](../../.github/workflows/agent-workflow-review.yml) 每天按照基线中的 `review-timezone` 检查一次复审日期，也可以通过 `workflow_dispatch` 手动执行相同检查。
+工作流未到期时直接结束；到期时创建标题为 `chore: review agent workflow practices` 的 Issue，并通过隐藏标记保证同一时间最多存在一个未关闭提醒。
+该自动化运行在 GitHub Actions，不会在开发机器上安装 `cron`、systemd service 或其他常驻任务。
+[GitHub 会在公开仓库连续 60 天无活动后自动停用 scheduled workflow](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)；恢复项目时需要在 Actions 中重新启用它，但本地启动门禁仍会报告已经过期的复审。
+
+本地和 Agent 使用同一个入口：
+
+```bash
+node scripts/check-agent-workflow-review.mjs
+```
+
+退出状态 `0` 表示未到期，`2` 表示已经到期，`1` 表示基线或调用无效；`--today YYYY-MM-DD` 可用于确定性边界测试。
+`make agent-workflow-check` 使用 `--validate` 检查元数据和派生日期，但不会因已经到期而让普通 PR 检查失败；它随 `make ci` 一起执行。
+
+提醒 Issue 保持打开，直到深度复审 PR 更新结论、复审记录和日期，并通过 `Closes #<issue-number>` 在合并时关闭它。
+提前关闭但未更新过期基线时，下一次定时检查会重新创建提醒；已经更新基线却遗留未关闭 Issue 时，应人工关闭，自动化不会猜测复审是否真正完成。
+
 ## 任务与会话边界
 
 整个 tiny-async-lab 是一个长期项目，不是一个永久会话。

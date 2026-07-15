@@ -19,9 +19,12 @@ LYCHEE := $(TOOLS_BIN)/lychee
 
 export PATH := $(TOOLS_BIN):$(NODE_TOOLS_BIN):$(PATH)
 
-.PHONY: book book-preview ci docs toolchain-check tools tools-check upstream
+.PHONY: agent-workflow-check book book-preview ci docs toolchain-check tools tools-check upstream
 
-ci: docs
+ci: docs agent-workflow-check
+
+agent-workflow-check: toolchain-check
+	node scripts/check-agent-workflow-review.mjs --validate
 
 docs: book
 	"$(MARKDOWNLINT)"

@@ -1,0 +1,89 @@
+name: Agent workflow review
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+      timezone: "Asia/Shanghai"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: agent-workflow-review-reminder
+  cancel-in-progress: false
+
+jobs:
+  remind:
+    name: review reminder
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: .node-version
+
+      - name: Check review deadline
+        id: deadline
+        shell: bash
+        run: |
+          set +e
+          node scripts/check-agent-workflow-review.mjs
+          status=$?
+          set -e
+
+          case "$status" in
+            0) echo "due=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "due=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$status" ;;
+          esac
+
+      - name: Create deduplicated reminder
+        if: steps.deadline.outputs.due == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          marker='<!-- agent-workflow-review -->'
+          existing_issue="$(
+            gh issue list \
+              --repo "$GITHUB_REPOSITORY" \
+              --state open \
+              --limit 1000 \
+              --json number,body \
+              --jq "map(select((.body // \"\") | contains(\"$marker\"))) | first | .number // empty"
+          )"
+
+          if [[ -n "$existing_issue" ]]; then
+            echo "Reminder issue #${existing_issue} is already open."
+            exit 0
+          fi
+
+          body_file="$RUNNER_TEMP/agent-workflow-review.md"
+          printf '%s\n' \
+            "$marker" \
+            '## 复审原因' \
+            '' \
+            '`docs/agent-workflow/BASELINES.md` 记录的 Agent 工作流复审已经到期。' \
+            '' \
+            '## 处理方式' \
+            '' \
+            '- 按 `BASELINES.md` 执行一次深度复审。' \
+            '- 使用独立分支和 PR 更新结论、复审记录及日期。' \
+            '- 在复审 PR 正文中使用 `Closes #<issue-number>`。' \
+            '' \
+            '本 Issue 只负责提醒，不授权自动调研、修改或合并仓库内容。' \
+            > "$body_file"
+
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title 'chore: review agent workflow practices' \
+            --body-file "$body_file"
