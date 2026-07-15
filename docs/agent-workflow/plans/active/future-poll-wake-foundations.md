@@ -3,7 +3,7 @@
 - 状态：active
 - 最近更新：2026-07-16
 - 关联路线图：`ROADMAP.md` 阶段 0 的恢复演练，以及阶段 1 的异步系统边界、`Future`/`Poll`、唤醒协议和最小 executor
-- 关联 PR：当前分支 `docs/async-system-boundaries`，PR 尚未创建
+- 关联 PR：里程碑 1 的 [#13](https://github.com/captainlee1024/tiny-async-lab/pull/13) 已合并到 `master`，merge commit `43fb7b0e901ae8e2b8502ce7d5a6ff77d0519be1`；里程碑 2 的首个实验 PR 尚未创建
 
 ## 目标
 
@@ -42,7 +42,7 @@
 在 `docs/src/` 建立第一章，解释调用、poll、wake 的总体路径，区分各层职责，并定位固定 `rust-src` 中的稳定入口。
 本里程碑不展开 `Future::poll` 的完整契约和编译器 lowering。
 
-#### 内部写作设计
+#### 异步系统边界内部写作设计
 
 本节只约束研究、写作和评审，不作为学习书的固定结构。
 
@@ -67,6 +67,46 @@
 
 从 Rust Reference、标准库 API、固定源码和最小手动 poll 实验核验 Future 的状态与调用边界，并同步阅读 `ASYNC-MODEL` 路由的设计资料。
 
+#### Future/Poll 内部写作设计
+
+本节只约束研究、实验、写作和评审，不作为学习书的固定结构。
+
+- 主问题：调用者每次 poll Future 时，调用者和 Future 实现分别承诺什么；首次 poll、`Pending`、`Ready` 和完成后再次 poll 的边界如何组成一个不会把具体实现行为误写成通用保证的状态模型？
+- 因果链：创建惰性 Future → 外部使用 `Pin<&mut Self>` 与当前 `Context` 主动 poll → Future 尝试推进 → `Pending` 保留未完成状态并安排进展通知 → 条件改变后调用者重新 poll → `Ready` 交付输出并结束本次计算；完成后再次 poll 的允许行为必须回到公共契约，而不能从单个实验外推。
+
+| 结论类型 | 主要证据 | 本里程碑边界 |
+| --- | --- | --- |
+| 当前语言语义 | Rust 1.91.1 Reference 中的 async function 与 await expression | 只证明编译器生成 Future 的调用、首次执行和 `.await` 传播语义，不替任意手写 Future 补充 trait 契约 |
+| 公共协议 | Rust 1.91.1 `Future::poll`、`Poll` 与完成后 poll 的 API 文档 | 分开记录调用者责任、实现者责任、保证、允许行为和未规定行为；完整 Waker 身份、生命周期与安全边界留给里程碑 3 |
+| 固定实现 | commit `ed61e7d7e242494fb7057f2657300d9e77bb4fcb` 的 `core::future` 与 `core::task` | 复查 doc comment、stability 和标准库聚焦实现，不把某个 Future 的完成后行为提升为 trait 保证 |
+| 可观察行为 | 标准库手动 poll 实验 `labs/future-poll` | 分别观察创建、首次 poll、`Pending`、外部条件改变、重新 poll 和 `Ready`；实验只证明被测 Future 与测试驱动的行为 |
+| 设计原因 | RFC 2592 与 `ASYNC-MODEL` 已路由资料 | 解释 poll 模型的取舍，不用历史文章覆盖当前 API 契约 |
+
+首个实验切片使用显式状态和测试控制的进展条件，保证返回 `Pending` 的路径登记当前 Waker，并由测试在条件改变时触发通知。
+实验先闭合单 Future 的调用与状态观察，不实现 ready queue、park、跨线程调度或 `RawWaker`，这些职责分别留给里程碑 3 和 4。
+
+正文和实验完成后应能仅依靠它们回答以下问题：
+
+1. 调用 `async fn`、首次 poll 返回的 Future 和重新 poll 分别由谁触发，函数体何时开始执行？
+2. `Pending` 表示什么、不表示什么，Future 实现方和调用方各自还承担什么责任？
+3. 为什么同一个 Future 的一次实验结果不能定义所有 Future 的首次或重复 poll 行为？
+4. `Ready` 之后调用方应如何处理 Future，错误地再次 poll 时公共契约仍保证和不保证什么？
+5. 哪些结论来自 Reference、公共 API、固定源码、聚焦实验或历史资料，为什么这些证据不能互相替代？
+
+#### 契约核验矩阵
+
+| 调用点 | 调用方可以依赖与必须承担的责任 | Future 实现方的责任与允许行为 | 证据与边界 |
+| --- | --- | --- | --- |
+| 调用 `async fn` | 得到捕获参数的 Future，调用本身不执行函数体；外部必须在之后 poll 它才会开始执行 | 编译器生成的 Future 在获得 poll 时执行函数体 | Rust 1.91.1 Reference [`items.fn.async.future`](https://doc.rust-lang.org/1.91.1/reference/items/functions.html#async-functions)；只约束 async function，不证明任意 Future 构造函数都没有同步工作 |
+| 完成前调用 `poll` | 使用 pinned mutable receiver 和当前 `Context` 发起一次完成尝试；Future 不会因作为一个值存在而自行获得 poll | 尝试推进计算并返回 `Poll`；实现应快速返回且不应阻塞，但 API 文档中的 runtime characteristics 不是完成时限保证 | Rust 1.91.1 [`Future::poll`](https://doc.rust-lang.org/1.91.1/core/future/trait.Future.html#tymethod.poll) 与固定源码 `library/core/src/future/future.rs::Future::poll` |
+| 返回 `Pending` | 只能得出本次尚未产生输出；保留兴趣的调用方应等待进展通知后再次 poll，下一次仍可能是 `Pending` | 当未来可能取得进展时，必须安排当前 task 被唤醒；多次 poll 后只应让最近一次 `Context` 中的 Waker 收到后续通知 | Rust 1.91.1 [`Poll::Pending`](https://doc.rust-lang.org/1.91.1/core/task/enum.Poll.html#variant.Pending) 与 `Future::poll`；Waker 身份、合并和生命周期的完整解释留给里程碑 3 |
+| `.await` 遇到 `Pending` | 外围 async context 把 `Pending` 返回给自己的 poll 调用方，待外围 Future 再次被 poll 后继续 | 被等待的 Future 仍只遵守普通 `Future::poll` 契约，`.await` 不创建独立 task | Rust 1.91.1 Reference [`expr.await.effects`](https://doc.rust-lang.org/1.91.1/reference/expressions/await-expr.html)；近似脱糖不是具体 compiler lowering |
+| 返回 `Ready(output)` | 取得本次计算的最终输出，并停止 poll 这个 Future | 交付 `Output`，此后无需再支持正常 poll 路径 | Rust 1.91.1 `Future::poll` 与 [`Poll::Ready`](https://doc.rust-lang.org/1.91.1/core/task/enum.Poll.html#variant.Ready) |
+| `Ready` 后错误地再次 poll | 调用方违反“完成后不再 poll”的契约，不能依赖返回、panic 或终止性 | trait 不约束这次调用的普通行为，可以 panic、永久阻塞或有其他结果；无论状态如何都不得产生 undefined behavior | Rust 1.91.1 `Future::poll` 的 `Panics` 小节；固定 `core::future::Ready<T>` 会 panic 只是一个实现事实 |
+
+`Poll<T>` 是一次 `poll` 调用对“当前是否得到输出”的观察结果，不是 Future 全部内部状态的通用枚举。
+固定实现 `core::future::Pending<T>` 永远不可能取得进展，因此它返回 `Pending` 而不安排 wake 并不违反“能够取得进展时唤醒”的条件；这个实现不能证明普通等待型 Future 可以遗漏通知。
+
 ### 3. Context 与唤醒协议
 
 解释 Waker 身份、最新 Waker、wake 合并、资源生命周期和 `RawWaker` 安全边界，再用聚焦实验观察重新 poll。
@@ -81,6 +121,9 @@
 - [x] `2026-07-16` — 用户评审判定第一版未形成充分的因果与教学结构；撤销完成结论，补充内部写作设计并开始整章重写。
 - [x] `2026-07-16` — 新版按等待、保存状态、poll、wake、重新 poll 与职责边界的因果链完成，并通过技术评审、教学自检、图形目视检查和本地 CI。
 - [x] `2026-07-16` — 用户接受新版作为当前迭代的质量基线；完成里程碑 1，并同步更新路线图与可复用写作约束。
+- [x] `2026-07-16` — PR #13 合并到 `master`；全新 Codex 对话在无原对话上下文的条件下，从跟踪文件、Git、源码入口和最小检查恢复到里程碑 2，用户确认恢复报告准确；干净 clone 的跨机器核验仍待完成。
+- [x] `2026-07-16` — 对照 Rust 1.91.1 版本化 Reference、API 文档和 commit `ed61e7d7e242494fb7057f2657300d9e77bb4fcb` 的固定 `rust-src`，完成首次 poll、`Pending`、`Ready` 和完成后再次 poll 的契约矩阵，并分开调用者责任、实现者责任与实验边界。
+- [x] `2026-07-16` — 建立标准库实验 package `labs/future-poll`，用显式单线程状态和安全 `Wake` 实现观察惰性执行、最近 Waker、`Pending` 到 `Ready` 以及两种具体完成后行为；同时把 Rust 格式化、Clippy、测试、doctest 和 rustdoc 接入本地 `make ci` 与 PR workflow，并完成阶段 0 对应路线图项。
 
 ## Surprises and Discoveries
 
@@ -88,6 +131,9 @@
 - 已验证：`std::future` 直接 re-export `core::future`，`std::task` 汇合 `core::task` 与 `alloc::task`；核心协议本身不依赖完整 `std`。
 - 已验证：事实有出处和检查通过仍不足以构成合格的机制解释；第一版把术语与源码索引放在主推理链之前，读者难以建立从等待、暂停到重新 poll 的连续模型。
 - 已验证：2020 年的 async 访谈包含当时尚未实现或后来变化的设想，只能提供历史线索，不能用来陈述 Rust 1.91.1 的现行能力。
+- 已验证：PR 合并后，计划中的分支、关联 PR 和 `Next Step` 可以落后于 Git 事实；恢复时必须先核对 merge commit、当前分支和工作树，不能直接执行旧交接文字。
+- 已验证：`Poll<T>` 只描述一次调用是否取得输出，不是 Future 内部状态机的完整公共模型；`Pending` 的通知责任以“能够取得进展”为条件，永不完成的 `core::future::Pending<T>` 因此无需制造 wake。
+- 已验证：Future 完成后再次 poll 的通用边界只有调用方不应这样做、实现方仍不得造成 undefined behavior；panic、永久阻塞或其他普通行为都不能由 trait 统一推断。
 - 待验证：编译器对 `async`/`.await` 的实际 lowering 细节留给路线图中固定 nightly 的独立里程碑，不能从 Reference 的近似脱糖推断具体 MIR 布局。
 
 ## Decision Log
@@ -97,6 +143,10 @@
 - `2026-07-16` — 写作设计保留在 active ExecPlan，学习书只呈现建立正确模型所需的知识，不机械增加目标、误解清单或证据地图。
 - `2026-07-16` — 第一版不做局部润色，而是按“等待 → 保存状态 → poll → Pending/wake → 重新 poll → 分层职责”的因果链重写；源码地图移到机制解释之后。
 - `2026-07-16` — 把评审接受的章节作为证据纪律、概念完整性和读者清晰度的质量下限，而不是后续章节的固定结构；评审失败必须撤销完成状态并回写可复用教训。
+- `2026-07-16` — 里程碑 2 先独立闭合 Future/Poll 的调用与状态契约；只引入返回 `Pending` 所需的 Waker 责任，Waker 身份、生命周期、wake 合并和 `RawWaker` 安全边界仍由里程碑 3 独立验收。
+- `2026-07-16` — 手动 poll 实验使用安全的 `Wake` 到 `Waker` 转换观察通知，不自行构造 `RawWaker`；先用单线程、测试控制的进展源隔离 poll 契约，线程间同步和 executor 调度不进入本切片。
+- `2026-07-16` — 首个实验与 workspace/CI 接入按 L2 评审，因为它固定 Future 的可观察状态与唤醒责任；显式状态只包含 `Waiting`、`Ready` 和 `Completed`，测试驱动与报告 API 只服务当前实验，不作为后续 runtime 抽象。
+- `2026-07-16` — 本切片的手写 diff 约 415 行，略过 400 行 review 预警；契约矩阵定义实验结论，首个 package 又必须与 Rust 检查同时接入，继续拆分会暂时留下无实验支撑的声明或未进入统一检查的代码，因此只把学习章节拆到后续 PR。
 
 ## Validation and Acceptance
 
@@ -107,6 +157,14 @@
 - `make ci` — 2026-07-16 对新版正文、研究笔记和写作约束运行通过；Markdown、拼写、链接、doctest、Mermaid 与 Agent 工作流检查均通过。
 - Mermaid 目视检查 — 2026-07-16 使用固定 Mermaid CLI 和 Chrome 检查进展时序图与标准库分层图，参与者、标签和箭头方向正确。
 - 用户评审 — 2026-07-16 接受新版作为当前迭代基线，里程碑 1 可以完成。
+- `node scripts/check-agent-workflow-review.mjs` — 2026-07-16 冷启动恢复时运行通过，当前日期为 2026-07-16，下一次复审为 2026-07-29。
+- `git status --short --branch`、`git rev-parse HEAD origin/master` 与 `git diff --check` — 2026-07-16 确认位于干净的 `master`，本地与远端均指向 PR #13 的 merge commit `43fb7b0e901ae8e2b8502ce7d5a6ff77d0519be1`。
+- `make docs` — 2026-07-16 冷启动恢复时运行通过；Markdown、拼写、离线链接、mdBook test 与 Mermaid 渲染均通过，没有产生 tracked diff。
+- Rust 1.91.1 版本化 Reference/API 与固定 `rust-src` 交叉核对 — 2026-07-16 确认 async function 调用、`.await` 传播、`Future::poll`、`Poll`、最近 Waker 和完成后再次 poll 的矩阵结论；`rustc --version --verbose` 的 commit 与 `upstream/BASELINES.md` 一致。
+- `cargo run -p future-poll` — 2026-07-16 观察到 `async fn` 函数体执行次数从首次 poll 前的 0 变为之后的 1，两次受控 poll 均为 `Pending`，旧 Waker 收到 0 次 wake、最近 Waker 收到 1 次 wake，随后重新 poll 得到 `Ready("完成")`。
+- `cargo test -p future-poll` — 2026-07-16 通过 2 个单元测试和 1 个 doctest，覆盖惰性执行、最近 Waker 与两个具体 Future 的完成后行为差异。
+- `make ci` — 2026-07-16 首次运行因计划内两个同名“内部写作设计”标题触发 Markdownlint `MD024`；改为里程碑特定标题后再次运行通过，覆盖 Rust 格式化、Clippy、测试、doctest、rustdoc、文档、Mermaid 和 Agent 工作流检查。
+- `.tools/bin/lychee --no-progress --max-retries 3 labs/future-poll/README.md docs/agent-workflow/plans/active/future-poll-wake-foundations.md` — 2026-07-16 检查 9 个链接，全部通过。
 
 ## Idempotence and Recovery
 
@@ -116,8 +174,8 @@
 
 ## Next Step
 
-提交并合并当前 `docs/async-system-boundaries` PR 后，停止使用原对话并开启全新的 Codex 对话恢复里程碑 2。
-新对话只提供仓库，并要求：“读取 `AGENTS.md` 和唯一的 active ExecPlan；修改文件前，先按 `PLANS.md` 的恢复核验回答五个问题。”
+先 review 并通过独立 PR 合入当前 `labs/future-poll`、workspace/CI 接入、契约矩阵和恢复记录，不在同一 PR 起草学习章节。
+合入后从 `research/CATALOG.md` 重新进入 `ASYNC-MODEL` 已路由资料，只补齐 Future/Poll 契约所需的设计原因与当前证据边界，再基于本计划和实验起草里程碑 2 正文。
 
 ## Outcomes and Retrospective
 
