@@ -215,7 +215,7 @@ make ci
 `make ci` 是与 PR 必需检查保持同步的稳定入口；当前执行全部文档检查，首个 Rust package 加入后再纳入格式化、lint 和测试。
 `make tools` 要求当前终端使用 `.node-version` 固定的 Node.js，并显式联网将固定版本的 Cargo 辅助工具安装到 `.tools/`，再根据 lockfile 将 Node.js 工具安装到 `node_modules/`；两个目录均不提交到 Git。
 `make ci` 不安装工具，也不回退到全局或 `/tmp` 中的同名程序；本地工具缺失时按照提示运行 `make tools`。
-只检查文档时运行 `make docs`，只构建学习书时运行 `make book`；所需工具及版本见 [`upstream/BASELINES.md`](upstream/BASELINES.md)。
+只检查文档时运行 `make docs`，只构建学习书时运行 `make book`，需要实时预览时运行 `make book-preview`；所需工具及版本见 [`upstream/BASELINES.md`](upstream/BASELINES.md)。
 外部链接受网络状态影响，不作为 PR 的必需检查，由定时 CI 完整验证。
 
 ## Review 与合并
