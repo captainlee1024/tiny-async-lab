@@ -5,7 +5,7 @@
 
 | ID | 阶段 | 主要问题 | 候选资料 | 必须补充的核验 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| `ASYNC-MODEL` | 1 | Rust 为什么选择基于 `Future` 的 stackless coroutine；调用、poll 和 `.await` 分别发生什么 | `WB-ASYNC-ORIGIN`、`NM-WB-INTERVIEW` | Rust Reference、标准库契约、固定编译器输出与实验 | 未开始 |
+| `ASYNC-MODEL` | 1 | Rust 为什么选择基于 `Future` 的 stackless coroutine；调用、poll 和 `.await` 分别发生什么 | `AT-FUTURES-DESIGN`、`WB-ASYNC-ORIGIN`、`NM-WB-INTERVIEW` | Rust Reference、标准库契约、固定编译器输出与实验 | 进行中 |
 | `PINNING` | 1 | 自引用状态机为什么需要 pinning；`Pin`、`Unpin`、pinned places 与 `Move` 分别解决什么 | `WB-PIN`、`WB-PINNED-PLACES`、`NM-MINPIN`、`NM-MOVE` | 标准库契约、RFC 2349、固定源码和最小实验 | 未开始 |
 | `ASYNC-TRAITS` | 1、6 | async trait 的返回类型、`Send` 约束、dyn dispatch 与分配策略如何互相影响 | `NM-SEND-BOUND`、`NM-DYN-ASYNC` | 已稳定语法、当前项目目标、编译器行为和实验 | 未开始 |
 | `TOKIO-MIO-STACK` | 2 | Mio、Tokio runtime、driver、task 与公共 I/O API 的职责边界如何形成 | `NM-CARL-INTERVIEW` | 固定 Tokio/Mio 公共契约、源码、测试和黑盒实验 | 未开始 |

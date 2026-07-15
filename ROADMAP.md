@@ -42,7 +42,7 @@ flowchart TD
     S --> Q[标准库代码质量复盘]
 ```
 
-- [ ] 划清语言、标准库、编译器和运行时的职责，并根据固定 `rust-src` 建立相关模块地图。
+- [x] 划清语言、标准库、编译器和运行时的职责，并根据固定 `rust-src` 建立相关模块地图。
 - [ ] 研究 `Future` 与 `Poll` 的契约、状态和重复 poll 边界，并建立最小手动 poll 实验。
 - [ ] 研究 `Context`、`Waker`、`RawWaker` 与 `Wake` 的进度协议、生命周期和安全不变量。
 - [ ] 用标准库实现只服务于学习的最小 executor 实验，闭合 poll、park 和 wake 路径。
