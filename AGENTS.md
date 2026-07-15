@@ -66,6 +66,9 @@ When citing upstream source, record the repository, tag or commit, file path, an
 - Standard-library-only labs must not depend on a third-party async runtime.
 - `tiny-mio` must remain runtime-agnostic: no `Future`, task scheduler, executor, or stored `std::task::Waker`.
 - `tiny-runtime` may depend on `tiny-mio` but must not delegate its core executor, scheduler, timer, or reactor implementation to Tokio.
+- Build the general-purpose `tiny-runtime` baseline before specialized variants. Do not add a multi-mode API, scheduler trait, configuration layer, or crate boundary for hypothetical variants; evaluate shared structure only after at least two concrete implementations expose it.
+- Keep scoped/structured concurrency semantics, scheduling policy, and I/O driver/topology as separate research axes. A specialized variant may combine them only after stating its workload, observable contract, performance hypothesis, and deliberately traded-away guarantees.
+- Compare a retained specialized variant with pinned Tokio and the general baseline only after aligning correctness and capability boundaries, and follow the benchmark and causal-attribution requirements in `docs/engineering-standards.md`.
 - Platform scope and durable, cross-cutting, or hard-to-reverse architectural changes require an ADR before implementation; small local decisions stay with the code or PR rationale.
 - Every unsafe block must have a preceding `// SAFETY:` argument, and unsafe APIs must document `# Safety`. Keep unsafe regions small, make unsafe operations inside unsafe functions explicit, and test applicable paths with Miri.
 - Async changes must state progress, wake, cancellation, cleanup, and shutdown invariants. Use ordinary tests, doctests, Loom, Miri, fuzzing, and benchmarks only for the questions each tool can answer; never present a clean tool run as a correctness proof.

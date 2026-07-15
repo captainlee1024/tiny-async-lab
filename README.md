@@ -7,8 +7,9 @@
 1. 研究 Rust 标准库中的异步契约与基础类型，包括 `Future`、`Poll`、`Context`、`Waker`、`Pin` 和 `Unpin`。
 2. 研究 `async`/`.await` 的语义、近似脱糖和编译器状态机。
 3. 学习 Tokio 的公共使用模型、内部架构和实现取舍，并研究 Mio 提供的底层 I/O 抽象。
-4. 实现独立于运行时的 `tiny-mio`，再基于它实现 `tiny-runtime`。
-5. 使用 Tokio 和 `tiny-runtime` 分别实现同一批异步最佳实践案例。
+4. 实现独立于运行时的 `tiny-mio`，再基于它实现通用 `tiny-runtime` 基线。
+5. 使用 Tokio 和通用 `tiny-runtime` 分别实现同一批异步最佳实践案例。
+6. 在通用基线与配套生态稳定后，针对明确场景探索专用运行时变体，并通过公平基准和性能归因解释其收益与代价。
 
 ## 两条并行学习线
 
