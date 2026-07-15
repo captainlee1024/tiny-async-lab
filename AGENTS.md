@@ -28,6 +28,12 @@ Use the two-pass method in `docs/source-reading-method.md`:
 1. Establish semantics, contracts, invariants, state transitions, and failure modes.
 2. Revisit the same unit for API design, naming, module boundaries, errors, tests, documentation, platform isolation, and maintainability.
 
+Do not declare a mechanism understood while a conclusion depends on an unnamed black box. A temporary forward reference must name the missing concept, explain why it does not invalidate the current conclusion, and route it to a concrete `ROADMAP.md` milestone or `research/TOPICS.md` question.
+
+Refine only the stage being approached. Split a chapter or experiment when it gains an independently verifiable question, contract, state machine, ownership/lifecycle boundary, safety/platform boundary, or evidence path; do not split only because prose became long, and do not pre-create empty chapters.
+
+Study rationale alongside each mechanism through the question-routed sources in `research/TOPICS.md`. Separate an author's stated priorities from current guarantees and implementation facts, and verify promoted claims through RFCs, issues, PRs, history, pinned source, or experiments as appropriate.
+
 Record elegant-looking code only after explaining what constraint it satisfies. Do not mechanically translate upstream implementations into project code.
 
 When citing upstream source, record the repository, tag or commit, file path, and symbol. Treat line numbers as secondary because they drift.
@@ -81,6 +87,7 @@ When citing upstream source, record the repository, tag or commit, file path, an
 
 ## Generated and installed artifacts
 
+- Keep the root `Cargo.lock` tracked as the shared workspace resolution. Update it with the manifest or dependency change that requires the new resolution, and keep unrelated lockfile churn out of other changes.
 - Treat `node_modules/` and `.tools/` as opaque installed artifacts. Never recursively list, search, or read them during ordinary repository work.
 - Treat `target/` and `docs/book/` as generated outputs rather than sources of truth. Do not recursively inspect them during ordinary work; use Rust sources and `docs/src/` first.
 - Inspect a precise path under `target/` only when a task requires compiler, build-script, code-generation, or binary-output evidence.

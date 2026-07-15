@@ -5,7 +5,7 @@
 ## 阶段 0：仓库基础
 
 - [x] 初始化根 Git 仓库并关联远程仓库。
-- [x] 创建虚拟 Cargo workspace，并固定根工具链。
+- [x] 创建虚拟 Cargo workspace，跟踪共享 lockfile，并固定根工具链。
 - [x] 添加 Agent 约束与源码阅读方法。
 - [x] 建立文档语言和 Git/PR 协作规范。
 - [x] 建立文档、证据、代码设计与小步变更的工程质量约束。
@@ -21,18 +21,40 @@
 
 ## 阶段 1：Rust 异步契约与编译器模型
 
-- [ ] 根据固定版本的 `rust-src`，梳理相关的 `core`、`alloc` 和 `std` 模块。
-- [ ] 研究 `Future`、`Poll`、`Context`、`Waker`、`RawWaker`、`Wake`、`Pin` 和 `Unpin`，并为它们编写最小实验。
-- [ ] 区分语言层面的近似脱糖与编译器生成的 Future 状态机。
-- [ ] 使用单独固定的 nightly 工具链检查 HIR、THIR 和 MIR。
+本阶段闭合语言、标准库与必要编译器模型之间的边界；Tokio 调度和异步 I/O 留到阶段 2，自研可演进运行时留到阶段 4。
+学习顺序允许暂时前向引用，但每个缺口都必须登记后续回收位置。
+
+```mermaid
+flowchart TD
+    B[异步系统角色与源码边界] --> F[Future 与 Poll 契约]
+    F --> W[Context 与唤醒协议]
+    W --> E[标准库最小 executor 实验]
+    F --> A[async 与 await 的语言语义]
+    A --> M[编译器 lowering 与状态机]
+    M --> P[Pin 与 Unpin]
+    E --> C[取消、drop 与资源释放]
+    P --> C
+    C --> S[跨 await 的 Send 与 Sync]
+    S --> Q[标准库代码质量复盘]
+```
+
+- [ ] 划清语言、标准库、编译器和运行时的职责，并根据固定 `rust-src` 建立相关模块地图。
+- [ ] 研究 `Future` 与 `Poll` 的契约、状态和重复 poll 边界，并建立最小手动 poll 实验。
+- [ ] 研究 `Context`、`Waker`、`RawWaker` 与 `Wake` 的进度协议、生命周期和安全不变量。
+- [ ] 用标准库实现只服务于学习的最小 executor 实验，闭合 poll、park 和 wake 路径。
+- [ ] 区分 `async`/`.await` 的公开语义、用于解释的近似脱糖和编译器实际生成的状态机。
+- [ ] 使用单独固定的 nightly 工具链检查相关 HIR、THIR 和 MIR，并记录版本与命令。
+- [ ] 研究 `Pin`、`Unpin`、地址稳定性和自引用状态之间的关系，并核验 Future poll 签名中的约束。
 - [ ] 研究通过 drop Future 与资源产生的取消语义。
 - [ ] 研究值跨越 `.await` 时对 `Send`/`Sync` 的影响。
 - [ ] 对已研究的标准库源码完成第二遍代码质量复盘。
 
+每个机制项完成时，都要闭合契约、可观察行为、固定实现、设计原因和工程取舍；独立问题按 [`docs/source-reading-method.md`](docs/source-reading-method.md) 动态拆分。
+
 ## 阶段 2：Tokio 与 Mio
 
 - [ ] 固定 Tokio release 及其实际解析到的 Mio 基线版本。
-- [ ] 为任务、spawn、调度、时间、I/O、同步、取消和关闭建立黑盒实验。
+- [ ] 为任务、spawn、调度、时间、I/O、同步、取消和关闭建立外部可观察实验。
 - [ ] 建立 Tokio 公共 API 与运行时内部模块、关键 symbol 之间的映射。
 - [ ] 研究 Mio 的 polling 模型、平台后端、注册、事件投递和 poller 唤醒。
 - [ ] 从操作系统开始，追踪 readiness 如何经过 Mio 和 Tokio 最终唤醒任务 `Waker`。
