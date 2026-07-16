@@ -19,7 +19,7 @@ LYCHEE := $(TOOLS_BIN)/lychee
 
 export PATH := $(TOOLS_BIN):$(NODE_TOOLS_BIN):$(PATH)
 
-.PHONY: agent-workflow-check book book-preview ci docs rust toolchain-check tools tools-check upstream
+.PHONY: agent-workflow-check book book-preview ci docs external-links rust toolchain-check tools tools-check upstream
 
 ci: rust docs agent-workflow-check
 
@@ -38,6 +38,16 @@ docs: book
 	"$(LYCHEE)" --offline --include-fragments=full --no-progress .
 	"$(MDBOOK)" test docs
 	scripts/check-mermaid.sh
+
+external-links: tools-check
+	"$(LYCHEE)" \
+		--exclude-all-private \
+		--max-concurrency 8 \
+		--host-concurrency 1 \
+		--host-request-interval 1s \
+		--max-retries 1 \
+		--retry-wait-time 2 \
+		.
 
 book: tools-check
 	"$(MDBOOK)" build docs
