@@ -244,6 +244,7 @@ make ci
 `make ci` 不安装工具，也不回退到全局或 `/tmp` 中的同名程序；本地工具缺失时按照提示运行 `make tools`。
 只检查文档时运行 `make docs`，只构建学习书时运行 `make book`，需要实时预览时运行 `make book-preview`；所需工具及版本见 [`upstream/BASELINES.md`](upstream/BASELINES.md)。
 外部链接不由 CI 定期探测；新增或修改外部链接时人工确认可访问，在其支撑的结论进入正式文档前再次核验，并在 PR 验证记录或对应研究状态中留下证据。
+需要批量排查时可以主动运行 `make external-links`；该命令只筛选需要人工复核的失败项，不属于 `make ci` 或 PR 门禁。
 
 ## Review 与合并
 
