@@ -119,6 +119,20 @@
 `Poll<T>` 是一次 `poll` 调用对“当前是否得到输出”的观察结果，不是 Future 全部内部状态的通用枚举。
 固定实现 `core::future::Pending<T>` 永远不可能取得进展，因此它返回 `Pending` 而不安排 wake 并不违反“能够取得进展时唤醒”的条件；这个实现不能证明普通等待型 Future 可以遗漏通知。
 
+#### 固定标准库源码第一遍走读记录
+
+本次走读固定在 Rust `1.91.1`、commit `ed61e7d7e242494fb7057f2657300d9e77bb4fcb` 的本地 `rust-src`，目标四个文件没有 target 条件编译或 unsafe 实现，Waker 的表示和安全边界不在本次读取范围内。
+
+| 固定单元 | 状态、控制流与进度责任 | 失败行为与证据边界 |
+| --- | --- | --- |
+| `library/core/src/future/future.rs::Future::poll` | trait 只用 `Pin<&mut Self>`、当前 `Context` 和 `Poll<Output>` 规定一次推进尝试，不暴露通用内部状态；返回 `Pending` 的可进展 Future 必须安排当前 task 在可以继续时被唤醒，多次 poll 后只应通知最近一次 `Context` 的 Waker；`&mut F` 与 `Pin<P>` 的 blanket impl 只把调用转发给底层 Future | 返回 `Ready` 后调用方应停止 poll；错误地再次 poll 可以 panic、永久阻塞或产生其他普通问题，但安全方法在任何状态都不得导致 undefined behavior；“Future 是 inert”只说明 Future 自身仍需 poll 才能交付或推进，源码同时明确其他 task 中的底层计算可以独立继续 |
+| `library/core/src/task/poll.rs::Poll` | `Ready(T)` 与 `Pending` 只表达本次调用有没有取得值，enum 自己不保存 Future 生命周期或状态转换；`map`、`map_ok` 和 `map_err` 只转换匹配的 `Ready` 内容并原样传播 `Pending` | `Poll` 没有独立失败分支，错误属于 `T` 的结构，例如 `Poll<Result<T, E>>`；enum 和常用映射 API 已稳定，但同文件的 `Try` 与 `FromResidual` impl 仍由 `try_trait_v2` 标为 unstable，源码存在不能替代逐项 stability 证据 |
+| `library/core/src/future/ready.rs::Ready<T>::poll` | `ready(t)` 构造 `Ready(Some(t))`，第一次 poll 用 `Option::take` 完成 `Some(T) -> None` 并返回 `Ready(T)`；实现显式为 `Unpin`，且立即完成路径不读取 `Context`、不登记 wake | 完成后再次 poll 会因 `expect` panic，完成后调用 `into_inner` 也会 panic；这是 `Ready<T>` 的一次性交付实现事实，不能提升为所有 Future 的重复 poll 保证 |
+| `library/core/src/future/pending.rs::Pending<T>::poll` | 类型只保存 `PhantomData<fn() -> T>`，poll 不修改自身、不读取 `Context`，每次都返回 `Pending`，因此没有从未完成到完成的状态转换 | 它永远不可能取得进展，所以不登记 Waker 仍满足 `Pending` 的条件化通知责任；这个特例不能证明能够进展的 Future 可以返回 `Pending` 而遗漏通知 |
+
+固定 `coretests` 只补充局部实现证据：`coretests/tests/task.rs::poll_const` 检查 `Poll` 状态查询可用于 const context，`coretests/tests/waker.rs::nop_waker::test_const_waker` 检查 `Ready<T>` 可在 no-op Waker 下立即完成，`coretests/tests/future.rs::_pending_impl_all_auto_traits` 以编译检查固定 `Pending<T>` 不受 `T` 的常见 auto traits 约束。
+`Ready<T>` 的显式 `Unpin`、`Pending<T>` 的 marker 选择和无条件 auto traits 只记录为第二遍工程设计复查候选，不在本里程碑推断设计动机；通用 Future 的 drop、取消与清理也不由这四个单元定义，按 `ROADMAP.md` 阶段 1 和 `research/TOPICS.md` 的 `CANCELLATION` 路由后续回收。
+
 ### 3. Context 与唤醒协议
 
 解释 Waker 身份、最新 Waker、wake 合并、资源生命周期和 `RawWaker` 安全边界，再用聚焦实验观察重新 poll。
@@ -142,6 +156,7 @@
 - [x] `2026-07-16` — PR #14 通过 merge commit `5c58b6f` 合入，`master` 与 `origin/master` 同步且工作树干净；观察版 `39c7969` 是 `master` 祖先，教学检查点没有被 squash。
 - [x] `2026-07-16` — 在独立分支形成解释版 commit `6fb9ee3`，只增加 73 行注释，梳理 readiness 与通知、最近 Waker、发布顺序、完成终态、task 唤醒和手动驱动边界；书页保持 7 行并增加解释版与该 commit 的差异入口。
 - [x] `2026-07-16` — PR #15 通过 merge commit `8862f5d` 合入，解释版 `6fb9ee3` 成为 `master` 祖先；书页中的观察版、解释版和注释差异入口均指向已经保留的历史。
+- [x] `2026-07-16` — 完成 Rust 1.91.1 固定源码第一遍走读，逐项核验 `Future::poll`、`Poll`、`Ready<T>::poll` 与 `Pending<T>::poll` 的契约落点、具体状态、进度责任、重复 poll 边界和 stability，并把 Waker 安全、取消与工程设计复盘保留在已命名的后续路径。
 
 ## Surprises and Discoveries
 
@@ -154,6 +169,8 @@
 - 已验证：Future 完成后再次 poll 的通用边界只有调用方不应这样做、实现方仍不得造成 undefined behavior；panic、永久阻塞或其他普通行为都不能由 trait 统一推断。
 - 已验证：可运行实验和必要字段注释足以支持独立走读，但不会自动暴露读者是否把资源状态变化、Waker 通知和 executor 调度合并成同一动作；先要求读者复述再回写详细注释能够定位真实理解断点。
 - 已验证：把内部理解检查和协作脚手架直接复制到实验入口，会与 lab 代码争夺注意力并制造额外阅读负担；入口只需在正确时机指向固定实验版本。
+- 已验证：`Future` 的 inert 不能解释为其关联的所有外部工作都停止；固定 trait 文档明确区分必须靠 poll 推进或交付的 Future 与可能在另一个 task 中独立计算、只由 Future 转交结果的工作。
+- 已验证：`Poll` 源文件同时包含 stable enum/映射 API 和 unstable `try_trait_v2` impl，引用固定源码时仍须逐项核对 stability，不能把文件级存在当作稳定保证。
 - 待验证：编译器对 `async`/`.await` 的实际 lowering 细节留给路线图中固定 nightly 的独立里程碑，不能从 Reference 的近似脱糖推断具体 MIR 布局。
 
 ## Decision Log
@@ -202,6 +219,10 @@
 - `git merge-base --is-ancestor 39c7969231ac1ae24d1bf64fb30419633bcb6875 master` 与 `git merge-base --is-ancestor 6fb9ee38aedb9e6d1ee6d9de9426ea4827b9ade1 master` — 2026-07-16 均返回 0，确认观察版和解释版教学检查点都由 `master` 历史保留。
 - `cargo test -p future-poll` — 2026-07-16 在 PR #15、#16 和 #17 合入后的 `master` 通过 2 个单元测试和 1 个 doctest，实验行为仍可恢复。
 - `git status --short --branch` 与 `git rev-parse HEAD origin/master` — 2026-07-16 确认从干净且同步的 `master` `970acfa92b46a19e946306a4907e3ff6feaf01ff` 创建 `docs/future-poll-contract`，恢复时没有继承未提交变更。
+- `rustc --version --verbose` 与 `cargo --version --verbose` — 2026-07-16 确认工具链分别为 Rust `1.91.1` commit `ed61e7d7e242494fb7057f2657300d9e77bb4fcb` 和 Cargo `1.91.1` commit `ea2d97820c16195b0ca3fadb4319fe512c199a43`，与 `upstream/BASELINES.md` 一致。
+- 固定 `rust-src` 与 `coretests` 第一遍走读 — 2026-07-16 完整读取四个目标源码文件，并定位 `coretests/tests/task.rs::poll_const`、`coretests/tests/waker.rs::nop_waker::test_const_waker` 与 `coretests/tests/future.rs::_pending_impl_all_auto_traits`；没有把 Waker 实现、unstable `Try` impl 或具体 Future 的重复 poll 行为提升为通用稳定契约。
+- `cargo test -p future-poll` — 2026-07-16 在固定源码第一遍走读后通过 2 个单元测试和 1 个 doctest，确认手动实验仍支持惰性执行、最新 Waker、`Pending -> Ready` 与具体 Future 重复 poll 差异的既有观察。
+- `make docs` — 2026-07-16 对新增走读记录运行通过，覆盖 mdBook build/test、Markdownlint、拼写、离线链接和 Mermaid 渲染；mdBook 报告 `mdbook-mermaid` 按 `0.5.0` 构建而当前固定 mdBook 为 `0.5.2` 的非致命兼容性 warning。
 
 ## Idempotence and Recovery
 
@@ -211,8 +232,7 @@
 
 ## Next Step
 
-在新会话完成里程碑 2 的第一遍源码走读：依次核验固定 Rust 1.91.1 的 `library/core/src/future/future.rs::Future::poll`、`library/core/src/task/poll.rs::Poll`、`library/core/src/future/ready.rs::Ready<T>::poll` 与 `library/core/src/future/pending.rs::Pending<T>::poll`，记录契约、状态、失败边界和实现事实，不提前展开 Waker 安全边界。
-源码走读完成后从 `research/CATALOG.md` 重新进入 `ASYNC-MODEL` 已路由资料，只补齐本里程碑所需的设计原因与证据边界，再起草 Future/Poll 正文。
+从 `research/CATALOG.md` 重新进入 `research/TOPICS.md` 的 `ASYNC-MODEL` 已路由资料，只补齐本里程碑所需的 poll 设计原因与证据边界，再起草 Future/Poll 正文；不提前读取 Waker、Pin、取消或 runtime 路线的原始材料。
 
 ## Outcomes and Retrospective
 
