@@ -243,7 +243,7 @@ make ci
 `make tools` 要求当前终端使用 `.node-version` 固定的 Node.js，并显式联网将固定版本的 Cargo 辅助工具安装到 `.tools/`，再根据 lockfile 将 Node.js 工具安装到 `node_modules/`；两个目录均不提交到 Git。
 `make ci` 不安装工具，也不回退到全局或 `/tmp` 中的同名程序；本地工具缺失时按照提示运行 `make tools`。
 只检查文档时运行 `make docs`，只构建学习书时运行 `make book`，需要实时预览时运行 `make book-preview`；所需工具及版本见 [`upstream/BASELINES.md`](upstream/BASELINES.md)。
-外部链接受网络状态影响，不作为 PR 的必需检查，由定时 CI 完整验证。
+外部链接不由 CI 定期探测；新增或修改外部链接时人工确认可访问，在其支撑的结论进入正式文档前再次核验，并在 PR 验证记录或对应研究状态中留下证据。
 
 ## Review 与合并
 
