@@ -12,7 +12,7 @@
 | 层次 | 当前内容 | 变更原则 |
 | --- | --- | --- |
 | 稳定内核 | 仓库事实源、明确验收、可恢复计划、Git 与测试核验、人工批准 | 只有项目目标或证据标准变化时调整 |
-| 可替换增强层 | context reset、skill、hook、独立 evaluator、worktree、定时提醒和 orchestrator | 由实际失败或测量证明收益；失去收益时删除 |
+| 可替换增强层 | Goal、context reset、skill、hook、独立 evaluator、worktree、定时提醒和 orchestrator | 由实际失败或测量证明收益；失去收益时删除 |
 
 新增增强机制前必须写明它正在解决的已观察问题、成本和移除条件，模型或工具升级后也不默认保留针对旧行为建立的脚手架。
 
@@ -29,6 +29,9 @@
 
 源码、Git 状态和可重复验证优先于计划中的文字声明。
 产品 memory、对话 transcript 和本机 task list 可以帮助定位，但不得承载跨机器必须保留的唯一信息。
+
+产品 Goal 可以把当前里程碑的 outcome、constraints 和 verification 变成同一会话的持续执行条件，但它仍是会话内控制面，不是事实源。
+不要把完整 ExecPlan 复制进 Goal；Goal 报告完成后仍须核对当前工作树、Git、源码和检查结果，并把已验证进度写回 active ExecPlan。
 
 `ROADMAP.md` 只记录项目阶段和完成状态，ExecPlan 只协调一个复杂任务，ADR 只记录持久且难以撤销的决定，因此不要创建全局 `HANDOFF.md`、无限增长的进度日志或第二份路线图。
 
